@@ -28,8 +28,15 @@ Route::post('/businessRegister', [Controllers\Authcontroller::class, 'registerBu
 
 Route::group(['middleware' => ['auth:sanctum']], function (){
     Route::post('/logout', [Controllers\Authcontroller::class, 'logout']);
+
     Route::get('/categories', [Controllers\CategoryController::class, 'index']);
-    Route::get('/getBusinessCategories', [Controllers\CategoryController::class, 'getBusinessCategories']);
-    Route::post('/setCategoryToBusiness', [Controllers\CategoryController::class, 'setCategoryToBusiness']);
-    Route::delete('/deleteCategoryFromBusiness/{businessHasCategory}', [Controllers\CategoryController::class, 'deleteCategoryFromBusiness']);
+    //Business
+    //Categories
+    Route::get('/business/getCategories', [Controllers\CategoryController::class, 'getBusinessCategories']);
+    Route::post('/business/setCategory', [Controllers\CategoryController::class, 'setCategoryToBusiness']);
+    Route::delete('/business/deleteCategory/{businessHasCategory}', [Controllers\CategoryController::class, 'deleteCategoryFromBusiness']);
+    //Addresses
+    Route::put('/business/editAddress', [Controllers\AddressController::class, 'editAddress']);
+    Route::put('/business/getAddress', [Controllers\AddressController::class, 'getAddress']);
+
 });

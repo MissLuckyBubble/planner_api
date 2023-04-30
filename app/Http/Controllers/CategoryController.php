@@ -15,6 +15,7 @@ class CategoryController extends Controller
    public function index(){
        return Category::all();
    }
+
    public function getBusinessCategories(){
        return BusinessHasCategoryResource::collection(
            BusinessHasCategory::where('business_id',Auth::user()->business->id)->get()

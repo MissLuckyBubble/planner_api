@@ -26,7 +26,6 @@ class StoreBusinessRequest extends FormRequest
             'phoneNumber' => ['required', 'string', 'size:9', 'unique:users'],
             'email' => ['required', 'email:rfc,dns', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Password::defaults(), Password::min(8)],
-            'phoneNumber' => ['required', 'string', 'max:9', 'min:9', 'unique:users'],
             'name' => ['required','max:255', 'unique:businesses'],
             'eik' => ['required', 'unique:businesses', 'regex:/^\d{13}$|^\d{9}$/' ]
         ];
