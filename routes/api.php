@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use \App\Http\Controllers;
-
+use \App\Models;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -31,4 +31,5 @@ Route::group(['middleware' => ['auth:sanctum']], function (){
     Route::get('/categories', [Controllers\CategoryController::class, 'index']);
     Route::get('/getBusinessCategories', [Controllers\CategoryController::class, 'getBusinessCategories']);
     Route::post('/setCategoryToBusiness', [Controllers\CategoryController::class, 'setCategoryToBusiness']);
+    Route::delete('/deleteCategoryFromBusiness/{businessHasCategory}', [Controllers\CategoryController::class, 'deleteCategoryFromBusiness']);
 });
