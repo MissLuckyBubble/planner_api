@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginUserRequest;
-use App\Http\Requests\StoreOrganizationRequest;
+use App\Http\Requests\StoreBusinessRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Models\Address;
 use App\Traits\HttpResponses;
@@ -41,7 +41,7 @@ class Authcontroller extends Controller
             'token' => $user->createToken('API of ' . $user->email)->plainTextToken
         ]);
     }
-    public function registerOrg(StoreOrganizationRequest $request)
+    public function registerBusiness(StoreBusinessRequest $request)
     {
         $request->validated($request->all());
 
@@ -60,17 +60,18 @@ class Authcontroller extends Controller
             'postal_code' => null
         ]);
 
-        $organization = $user->organization()->create([
+        $business = $user->business()->create([
             'name' => $request->name,
             'eik' => $request->eik,
         ]);
 
-        $organization->address()->associate($address);
-        $organization->save();
+        $business->address()->associate($address);
+        $business->save();
 
         return $this->success([
-            'organization' => $organization,
             'user' => $user,
+            'business' => $business,
+            'address' => $address,
             'token' => $user->createToken('API of ' . $user->email)->plainTextToken
         ]);
     }

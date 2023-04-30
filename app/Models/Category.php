@@ -6,15 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 
-class Address extends Model
+class Category extends Model
 {
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'city',
-        'street',
-        'number',
-        'floor',
+        'title',
         'description'
     ];
 
@@ -22,8 +19,8 @@ class Address extends Model
 
     ];
 
-    public function business()
+    public function businessHasCategories()
     {
-        return $this->hasOne(Business::class);
+        return $this->hasMany(BusinessHasCategory::class);
     }
 }

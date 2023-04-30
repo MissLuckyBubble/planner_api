@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 
-class Organization extends Model
+class Business extends Model
 {
     use HasFactory, Notifiable;
 
@@ -39,5 +39,10 @@ class Organization extends Model
     public function address()
     {
         return $this->belongsTo(Address::class);
+    }
+
+    public function businessHasCategories()
+    {
+        return $this->hasMany(BusinessHasCategory::class);
     }
 }
