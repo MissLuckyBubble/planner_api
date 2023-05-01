@@ -30,4 +30,15 @@ class StoreAddressRequest extends FormRequest
             'description' =>['max:255'],
         ];
     }
+
+    public function messages()
+    {
+        return [
+            'city.required' => 'Полето град е задължително.',
+            'street.required' => 'Полето улица е задължително.',
+            'floor.required' => 'Полето етаж е задължително.',
+            'postal_code.required' => 'Полето пощенски код е задължително.',
+            'description.max' => 'Описанието не може да бъде повече от 255 символа.'
+        ];
+    }
 }

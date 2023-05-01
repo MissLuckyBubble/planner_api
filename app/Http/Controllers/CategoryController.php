@@ -33,7 +33,6 @@ class CategoryController extends Controller
 
    public function deleteCategoryFromBusiness(BusinessHasCategory $businessHasCategory){
        return $this->isNotAuthorized($businessHasCategory) ? $this->isNotAuthorized($businessHasCategory) : $businessHasCategory->delete();
-
    }
 
    private  function isNotAuthorized(BusinessHasCategory $businessHasCategory){

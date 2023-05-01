@@ -45,4 +45,9 @@ class Business extends Model
     {
         return $this->hasMany(BusinessHasCategory::class);
     }
+
+    public function picture()
+    {
+        return $this->hasMany(Picture::class);
+    }
 }

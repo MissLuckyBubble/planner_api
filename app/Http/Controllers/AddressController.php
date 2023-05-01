@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreAddressRequest;
 use App\Http\Resources\AddressResource;
 use App\Models\Address;
+use App\Models\Business;
 use App\Models\BusinessHasCategory;
 use App\Traits\HttpResponses;
 use Illuminate\Http\Request;
@@ -32,6 +33,12 @@ class AddressController extends Controller
     public  function getAddress(){
         return AddressResource::collection(
             Address::where('id',Auth::user()->business->address->id)->get()
+        );
+    }
+
+    public function getBusinessAddress(Business $business){
+        return AddressResource::collection(
+            Address::where('id',$business->address->id)->get()
         );
     }
 

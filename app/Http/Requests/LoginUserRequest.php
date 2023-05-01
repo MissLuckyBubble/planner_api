@@ -23,7 +23,16 @@ class LoginUserRequest extends FormRequest
     {
         return [
             'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string', 'min:6'],
+            'password' => ['required', 'string', 'min:8'],
         ];
+    }
+
+    public function messages()
+    {
+       return [
+           'email.required' => 'Полето Email е задължително.',
+           'password.required' => 'Полето парола е задължително.',
+           'password.min' => 'Паролата трябва да има минимум 8 символа.'
+       ];
     }
 }

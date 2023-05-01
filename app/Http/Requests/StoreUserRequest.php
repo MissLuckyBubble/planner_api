@@ -23,4 +23,17 @@ class StoreUserRequest extends FormRequest
         'password' => ['required', 'confirmed', Password::defaults(), Password::min(8)]
             ];
     }
+
+    public function messages()
+    {
+        return [
+            'phoneNumber.required' => 'Полето телефонен номер е задължително.',
+            'email.required' => 'Полето email е задължително.',
+            'password.required' => 'Полето парола е задължително.',
+            'phoneNumber' => 'Невалиден или същестуващ телефонен номер.',
+            'email' => 'Невалиден или същестуващ email.',
+            'password.confirmed' => 'Паролите трябва да съвпадат.',
+            'password.min' => 'Паролата трябва да съдържа поне 8 символа.' ,
+        ];
+    }
 }

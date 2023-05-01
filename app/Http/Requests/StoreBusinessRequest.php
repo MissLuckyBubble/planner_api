@@ -30,4 +30,21 @@ class StoreBusinessRequest extends FormRequest
             'eik' => ['required', 'unique:businesses', 'regex:/^\d{13}$|^\d{9}$/' ]
         ];
     }
+
+    public function messages()
+    {
+        return [
+            'phoneNumber.required' => 'Полето телефонен номер е задължително.',
+            'email.required' => 'Полето email е задължително.',
+            'password.required' => 'Полето парола е задължително.',
+            'name.required' => 'Полето име е задължително.',
+            'eik.required' => 'Полето ЕИК/ПИК е задължително.',
+            'phoneNumber' => 'Невалиден или същестуващ телефонен номер.',
+            'email' => 'Невалиден или същестуващ email.',
+            'password.confirmed' => 'Паролите трябва да съвпадат.',
+            'password.min' => 'Паролата трябва да съдържа поне 8 символа.' ,
+            'eik' => 'Невалидно или същестуващо ЕИК/ПИК'
+        ];
+    }
+
 }
