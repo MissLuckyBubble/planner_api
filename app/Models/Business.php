@@ -50,4 +50,14 @@ class Business extends Model
     {
         return $this->hasMany(Picture::class);
     }
+
+    public function week_days()
+    {
+        return $this->hasMany(WeekDay::class);
+    }
+
+    public function custom_days_off()
+    {
+        return $this->hasMany(WeekDay::class);
+    }
 }

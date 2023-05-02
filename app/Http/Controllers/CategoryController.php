@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\setCategoryToBusinessRequest;
 use App\Http\Resources\BusinessHasCategoryResource;
+use App\Models\Business;
 use App\Models\Category;
 use App\Models\BusinessHasCategory;
 use App\Traits\HttpResponses;
@@ -21,6 +22,12 @@ class CategoryController extends Controller
            BusinessHasCategory::where('business_id',Auth::user()->business->id)->get()
        );
    }
+
+    public function getCategoriesByBusiness(Business $business){
+        return BusinessHasCategoryResource::collection(
+            BusinessHasCategory::where('business_id',$business->id)->get()
+        );
+    }
 
    public function setCategoryToBusiness(setCategoryToBusinessRequest $request){
        $request->validated($request->all());
