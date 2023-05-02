@@ -19,13 +19,13 @@ class CategoryController extends Controller
 
    public function getBusinessCategories(){
        return BusinessHasCategoryResource::collection(
-           BusinessHasCategory::where('business_id',Auth::user()->business->id)->get()
+           Auth::user()->business->businessHasCategories
        );
    }
 
     public function getCategoriesByBusiness(Business $business){
         return BusinessHasCategoryResource::collection(
-            BusinessHasCategory::where('business_id',$business->id)->get()
+            $business->businessHasCategories
         );
     }
 

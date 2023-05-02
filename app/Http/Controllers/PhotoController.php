@@ -34,12 +34,12 @@ class PhotoController extends Controller
     }
 
     public function getAllPictures(){
-        $pictures = Picture::where('business_id', Auth::user()->business->id)->get();
+        $pictures = Auth::user()->business->pictures;
         return response()->json(['pictures' => $pictures]);
     }
 
     public  function getPictureByBusiness(Business $business){
-        $pictures = Picture::where('business_id', $business->id)->get();
+        $pictures = $business->pictures;
         return response()->json(['pictures' => $pictures]);
     }
 

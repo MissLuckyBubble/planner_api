@@ -38,6 +38,7 @@ class StoreBusinessRequest extends FormRequest
             'email.required' => 'Полето email е задължително.',
             'password.required' => 'Полето парола е задължително.',
             'name.required' => 'Полето име е задължително.',
+            'name.unique' => 'Това име вече е заето',
             'eik.required' => 'Полето ЕИК/ПИК е задължително.',
             'phoneNumber' => 'Невалиден или същестуващ телефонен номер.',
             'email' => 'Невалиден или същестуващ email.',

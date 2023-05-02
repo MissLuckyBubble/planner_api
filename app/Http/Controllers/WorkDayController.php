@@ -20,7 +20,7 @@ class WorkDayController extends Controller
 
     public function update(StoreWorkDayRequest $request, WorkDay $workday)
     {
-        if($this->isNotAuthorized($workday)) return $this->isNotAuthorized($workday);
+        if ($this->isNotAuthorized($workday)) return $this->isNotAuthorized($workday);
 
         $request->validated($request->all());
 
@@ -37,9 +37,10 @@ class WorkDayController extends Controller
         ]);
     }
 
-    public function setDayOff(WorkDay $workday){
+    public function setDayOff(WorkDay $workday)
+    {
 
-        if($this->isNotAuthorized($workday)) return $this->isNotAuthorized($workday);
+        if ($this->isNotAuthorized($workday)) return $this->isNotAuthorized($workday);
 
         $workday->update([
             'is_off' => true,
@@ -54,54 +55,47 @@ class WorkDayController extends Controller
         ]);
     }
 
-    private  function isNotAuthorized($workday){
-        if(Auth::user()->business->id !== $workday->business->id){
+    private function isNotAuthorized($workday)
+    {
+        if (Auth::user()->business->id !== $workday->business->id) {
             return $this->error('', 'You are not authorized to make this request', 403);
         }
     }
 
-    public function customDayOff(StoreCustomDayOffRequest $request){
-        $business_id = Auth::user()->business->id;
+    public function customDayOff(StoreCustomDayOffRequest $request)
+    {
+        $business = Auth::user()->business;
+
         $request->validated($request->all());
 
-        $existing_record = CustomDayOff::where('business_id', $business_id)
-            ->where('date', $request->date)
-            ->exists();
+        $existing_record = $business->custom_days_off->where('date', $request->date)->isNotEmpty();
+
         if ($existing_record) {
-            return $this->error('','Вече съществува персонализиран почивен ден за този бизнес на този ден', 400);
+            return $this->error('', 'Вече съществува персонализиран почивен ден за този бизнес на този ден', 400);
         }
 
         $dayOff = CustomDayOff::create([
             'date' => $request->date,
-            'business_id' => $business_id
+            'business_id' => $business->id
         ]);
         return $this->success([
             'Custom Day Of' => $dayOff
         ]);
     }
 
-    public function deleteCustomDayOff(CustomDayOff $customDayOff){
-        if($this->isNotAuthorized($customDayOff)) return $this->isNotAuthorized($customDayOff);
+    public function deleteCustomDayOff(CustomDayOff $customDayOff)
+    {
+        if ($this->isNotAuthorized($customDayOff)) return $this->isNotAuthorized($customDayOff);
         return $customDayOff->delete();
     }
 
-    public function getCustomDaysOff(){
+    public function getCustomDaysOff()
+    {
         $now = Carbon::now();
-        $business_id = Auth::user()->business->id;
+        $business = Auth::user()->business;
 
-        $oldCustomDaysOff = CustomDayOff::where('business_id', $business_id)
-            ->where('date', '<=', $now->format('Y-m-d'))
-            ->get()
-            ->map(function ($customDayOff) {
-                return new CustomDaysOffResource($customDayOff);
-            });
-
-        $newCustomDaysOff = CustomDayOff::where('business_id', $business_id)
-            ->where('date', '>=', $now->format('Y-m-d'))
-            ->get()
-            ->map(function ($customDayOff) {
-                return new CustomDaysOffResource($customDayOff);
-            });
+        $oldCustomDaysOff = $business->custom_days_off->where('date', '<=', $now->format('Y-m-d'));
+        $newCustomDaysOff = $business->custom_days_off->where('date', '>=', $now->format('Y-m-d'));
 
         return [
             'old' => $oldCustomDaysOff,
@@ -109,18 +103,21 @@ class WorkDayController extends Controller
         ];
     }
 
-    public function getSchedule(){
-        return WorkDayResource::collection(WorkDay::where('business_id',Auth::user()->business->id)->get());
+    public function getSchedule()
+    {
+        return WorkDayResource::collection(WorkDay::where('business_id', Auth::user()->business->id)->get());
     }
 
-    public function getScheduleByBusiness(Business $business){
+    public function getScheduleByBusiness(Business $business)
+    {
         return [
             'business_id' => $business->id,
-            'schedule' => WorkDayResource::collection(WorkDay::where('business_id',$business->id)->get())
+            'schedule' => WorkDayResource::collection(WorkDay::where('business_id', $business->id)->get())
         ];
     }
 
-    public function getTwoWeekSchedule(){
+    public function getTwoWeekSchedule()
+    {
         $now = Carbon::now();
         $tomorrow = $now->addDay();
 
@@ -136,14 +133,14 @@ class WorkDayController extends Controller
                 ->where('date', $date)
                 ->first();
 
-            if($customDayOff || (bool)$workDay->is_off){
+            if ($customDayOff || (bool)$workDay->is_off) {
                 $schedule[] = [
                     'date' => $date,
                     'workday' => false,
                     'is_off' => true,
                     'data' => null
                 ];
-            }else {
+            } else {
                 $schedule[] = [
                     'date' => $date,
                     'workday' => true,
