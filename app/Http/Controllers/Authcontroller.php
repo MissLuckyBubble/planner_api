@@ -6,6 +6,7 @@ use App\Http\Requests\LoginUserRequest;
 use App\Http\Requests\StoreBusinessRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Models\Address;
+use App\Models\ServiceCategory;
 use App\Models\WorkDay;
 use App\Traits\HttpResponses;
 use App\Models\User;
@@ -53,6 +54,7 @@ class Authcontroller extends Controller
             'password' => Hash::make($request->password),
             'role_id' => 2
         ]);
+
         $address = Address::create([
             'city' => '',
             'street' => '',
@@ -71,6 +73,7 @@ class Authcontroller extends Controller
         $business->save();
 
         $business_id = $business->id;
+
         $openHours = [];
         if (!$business || !$business->id) {
             return response()->json(['error' => 'Invalid business'], 400);
@@ -102,10 +105,16 @@ class Authcontroller extends Controller
             $openHours[] = $workDay;
         }
 
+        $serviceCategory = ServiceCategory::create([
+            'title' => 'Моята категория',
+            'business_id' => $business_id,
+        ]);
+
         return $this->success([
             'user' => $user,
             'business' => $business,
-            'open hours' => $openHours,
+            'open_hours' => $openHours,
+            'service_category' => $serviceCategory,
             'address' => $address,
             'token' => $user->createToken('API of ' . $user->email)->plainTextToken
         ]);

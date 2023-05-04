@@ -33,6 +33,7 @@ Route::group(['middleware' => ['auth:sanctum']], function (){
     Route::get('/getBusinessPictures/{business}', [Controllers\PhotoController::class, 'getPictureByBusiness']);
     Route::get('/getBusinessCategories/{business}', [Controllers\CategoryController::class, 'getCategoriesByBusiness']);
     Route::get('/getBusinessSchedule/{business}', [Controllers\WorkDayController::class, 'getScheduleByBusiness']);
+    Route::get('/getAllBusinessServiceCategories/{business}', [Controllers\ServiceController::class, 'getAllServiceCategoryByBusiness']);
 
 
     //Categories
@@ -58,6 +59,24 @@ Route::group(['middleware' => ['auth:sanctum']], function (){
     Route::get('/business/workday/schedule', [Controllers\WorkDayController::class, 'getSchedule']);
     Route::get('/business/workday/schedule/twoWeeks', [Controllers\WorkDayController::class, 'getTwoWeekSchedule']);
 
+    //Services Category
+    Route::post('/business/serviceCategory/create', [Controllers\ServiceController::class, 'createServiceCategory']);
+    Route::get('/business/serviceCategory/getAll', [Controllers\ServiceController::class, 'getAllServiceCategory']);
+    Route::get('/business/serviceCategory/get/{serviceCategory}', [Controllers\ServiceController::class, 'getServiceCategory']);
+    Route::patch('/business/serviceCategory/edit/{serviceCategory}', [Controllers\ServiceController::class, 'editServiceCategory']);
+    Route::delete('/business/serviceCategory/delete/{serviceCategory}', [Controllers\ServiceController::class, 'deleteServiceCategory']);
+
+   //Services
+    Route::post('/business/services/create', [Controllers\ServiceController::class, 'createService']);
+    Route::patch('/business/services/edit/{service}', [Controllers\ServiceController::class, 'editService']);
+    Route::patch('/business/services/move/{service}', [Controllers\ServiceController::class, 'moveServiceToNewCategory']);
+    Route::delete('/business/services/delete/{service}', [Controllers\ServiceController::class, 'deleteService']);
+
+    //GroupServices
+    Route::post('/business/group_services/create', [Controllers\ServiceController::class, 'createGroupService']);
+    Route::patch('/business/group_services/edit/{service}', [Controllers\ServiceController::class, 'editGroupService']);
+    Route::patch('/business/group_services/move/{service}', [Controllers\ServiceController::class, 'moveGroupServiceToNewCategory']);
+    Route::delete('/business/group_services/delete/{service}', [Controllers\ServiceController::class, 'deleteGroupService']);
 
 
 });

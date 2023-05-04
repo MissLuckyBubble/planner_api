@@ -46,7 +46,7 @@ class Business extends Model
         return $this->hasMany(BusinessHasCategory::class);
     }
 
-    public function picture()
+    public function pictures()
     {
         return $this->hasMany(Picture::class);
     }
@@ -58,6 +58,10 @@ class Business extends Model
 
     public function custom_days_off()
     {
-        return $this->hasMany(WeekDay::class);
+        return $this->hasMany(CustomDayOff::class);
+    }
+
+    public function service_categories(){
+        return $this->hasMany(ServiceCategory::class);
     }
 }
