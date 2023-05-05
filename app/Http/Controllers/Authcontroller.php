@@ -2,16 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\LoginUserRequest;
+use App\Http\Requests\RestorePasswordRequest;
 use App\Http\Requests\StoreBusinessRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Models\Address;
+use App\Models\PasswordReset;
 use App\Models\ServiceCategory;
 use App\Models\WorkDay;
 use App\Traits\HttpResponses;
 use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Testing\Fluent\Concerns\Has;
 
 class Authcontroller extends Controller
 {
@@ -38,8 +43,15 @@ class Authcontroller extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+        $customer = $user->customer()->create([
+            'name' => '',
+            'birth_day' => $request->birth_day,
+            'sex' => '',
+            'user_id' => $user->id
+        ]);
         return $this->success([
             'user' => $user,
+            'customer' => $customer,
             'token' => $user->createToken('API of ' . $user->email)->plainTextToken
         ]);
     }
@@ -100,7 +112,7 @@ class Authcontroller extends Controller
             $workDay->start_time = '00:00';
             $workDay->end_time = '00:00';
             $workDay->pause_start = null;
-            $workDay->pause_end =  null;
+            $workDay->pause_end = null;
             $workDay->save();
             $openHours[] = $workDay;
         }
@@ -122,6 +134,56 @@ class Authcontroller extends Controller
 
     public function logout()
     {
-        return response()->json('This is my LOGOUT method');
+        Auth::user()->currentAccessToken()->delete();
+        return $this->success([
+            'message' => 'You have successfully been logged out-!'
+        ]);
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request)
+    {
+
+        $user = User::where('email', $request->email)->firstOrFail();
+        if (!$user) {
+            return $this->success('','Ако данните са същестуващи ще получите имейл с код за възстановяване на вашата парола.');
+        } else {
+            $resetPasswordToken = str_pad(random_int(1, 9999), 4, 0, STR_PAD_LEFT);
+
+            if (!$userReset = PasswordReset::where('email', $user->email)->first()) {
+                PasswordReset::create([
+                    'email' => $user->email,
+                    'token' => $resetPasswordToken
+                ]);
+            } else {
+                $userReset->update([
+                    'email' => $user->email,
+                    'token' => $resetPasswordToken
+                ]);
+            }
+            $user->notify(new ResetPassword($resetPasswordToken));
+            return $this->success('','Ако данните са същестуващи ще получите имейл с код за възстановяване на вашата парола.');
+        }
+
+    }
+    public function resetPassword(RestorePasswordRequest $request){
+        $request->validated($request->all());
+        $user = User::where('email',$request->email)->first();
+        if(!$user){
+            return $this->error('','Невалидни данни, опитай отново.',404);
+        }
+
+        $reset = PasswordReset::where('email', $user->email)->first();
+        if(!$reset || $reset->token != $request->token){
+            return $this->error('','Невалидни данни, опитай отново.',404);
+        }
+        $user->update([
+           'password' => Hash::make($request->password)
+        ]);
+        $reset->delete();
+        $user->tokens()->delete();
+        return $this->success([
+            'user' => $user,
+            'token' => $user->createToken('API of ' . $user->email)->plainTextToken
+        ]);
     }
 }

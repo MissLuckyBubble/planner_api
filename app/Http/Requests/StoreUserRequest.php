@@ -20,8 +20,10 @@ class StoreUserRequest extends FormRequest
         return [
         'phoneNumber' => ['required', 'string', 'size:9', 'unique:users'],
         'email' => ['required', 'email:rfc,dns', 'max:255', 'unique:users'],
-        'password' => ['required', 'confirmed', Password::defaults(), Password::min(8)]
-            ];
+        'password' => ['required', 'confirmed', Password::defaults(), Password::min(8)],
+        'birth_day' => ['required', 'date_format:Y/m/d', 'before_or_equal:' . now()->subYears(13)->format('Y-m-d')],
+        ];
+
     }
 
     public function messages()
@@ -33,7 +35,10 @@ class StoreUserRequest extends FormRequest
             'phoneNumber' => 'Невалиден или същестуващ телефонен номер.',
             'email' => 'Невалиден или същестуващ email.',
             'password.confirmed' => 'Паролите трябва да съвпадат.',
-            'password.min' => 'Паролата трябва да съдържа поне 8 символа.' ,
+            'password.min' => 'Паролата трябва да съдържа поне 8 символа.',
+            'birth_day.required' => 'Моля въведете, вашата рождена дата.',
+            'birth_day.date_format' => 'Рождената дата трябва да е във фолмат Y/m/d.',
+            'birth_day.before_or_equal' => 'Трябва да имате поне 13г.',
         ];
     }
 }

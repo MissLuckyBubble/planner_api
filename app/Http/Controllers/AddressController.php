@@ -6,9 +6,7 @@ use App\Http\Requests\StoreAddressRequest;
 use App\Http\Resources\AddressResource;
 use App\Models\Address;
 use App\Models\Business;
-use App\Models\BusinessHasCategory;
 use App\Traits\HttpResponses;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AddressController extends Controller

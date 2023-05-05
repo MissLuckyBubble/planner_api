@@ -20,11 +20,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 //Public routes
 Route::post('/login', [Controllers\Authcontroller::class, 'login']);
+Route::post('/login/forgot_password', [Controllers\Authcontroller::class, 'forgotPassword']);
+Route::post('/login/reset_password', [Controllers\Authcontroller::class, 'resetPassword']);
 Route::post('/register', [Controllers\Authcontroller::class, 'register']);
 Route::post('/business/register', [Controllers\Authcontroller::class, 'registerBusiness']);
 
 //Protected routes
 Route::group(['middleware' => ['auth:sanctum']], function (){
+
     Route::post('/logout', [Controllers\Authcontroller::class, 'logout']);
 
     Route::get('/categories', [Controllers\CategoryController::class, 'index']);
