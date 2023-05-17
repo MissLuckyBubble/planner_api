@@ -19,15 +19,16 @@ class PhotoController extends Controller
 
         $request->validated();
 
-        $name = Carbon::now()->toDateTimeString() . '.' . $request->file('file')->getClientOriginalExtension();
-        $path = Storage::path($request->file('file')->store('/public/files'));
-        $path = str_replace('\\', '/', $path);
+        $pic = new Picture();
+        $getImage = $request->file;
+        $imageName = uniqid().time().'.'.$getImage->extension();
+        $imagePath = public_path(). '/files/';
+        $pic->path = \URL::to('/') . '/files/' . $imageName;
+        $pic->name = $imageName;
+        $pic->business_id = Auth::user()->business->id;
+        $getImage->move($imagePath, $imageName);
+        $pic->save();
 
-        $pic = Picture::create([
-            'name' => $name,
-            'path' => $path,
-            'business_id' => Auth::user()->business->id
-        ]);
         return $this->success([
             'picture' => $pic
         ]);

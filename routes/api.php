@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AppointmentNoCustomer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers;
@@ -28,15 +29,40 @@ Route::post('/business/register', [Controllers\Authcontroller::class, 'registerB
 //Protected routes
 Route::group(['middleware' => ['auth:sanctum']], function (){
 
+    //
     Route::post('/logout', [Controllers\Authcontroller::class, 'logout']);
+    Route::patch('/edit/email_phone', [Controllers\UserController::class, 'editEmailPhone']);
+    Route::patch('/edit/password', [Controllers\UserController::class, 'editPassword']);
 
     Route::get('/categories', [Controllers\CategoryController::class, 'index']);
 
+    //Customer
+    Route::get('/customer/profile', [Controllers\CustomerController::class, 'getProfile']);
+    Route::patch('/customer/profile/edit', [Controllers\CustomerController::class, 'editProfile']);
+    Route::post('/customer/favorites/{business}', [Controllers\CustomerController::class, 'add_delete_FavoritePlace']);
+    Route::post('/customer/appointments/create/{business}', [Controllers\CustomerController::class, 'createAppointment']);
+    Route::get('/customer/appointments/getAll',  [Controllers\CustomerController::class, 'getAllAppointments']);
+    Route::patch('/customer/appointments/cancel/{appointment}',  [Controllers\CustomerController::class, 'cancelAppointment']);
+    Route::post('/customer/appointments/rate/{appointment}', [Controllers\RatingController::class, 'leaveRate']);
+
+    // Customer Getting Business INFO
+    Route::get('/getBusiness/{business}',[Controllers\BusinessController::class,'getBusiness']);
     Route::get('/getBusinessAddress/{business}', [Controllers\AddressController::class, 'getBusinessAddress']);
     Route::get('/getBusinessPictures/{business}', [Controllers\PhotoController::class, 'getPictureByBusiness']);
     Route::get('/getBusinessCategories/{business}', [Controllers\CategoryController::class, 'getCategoriesByBusiness']);
     Route::get('/getBusinessSchedule/{business}', [Controllers\WorkDayController::class, 'getScheduleByBusiness']);
     Route::get('/getAllBusinessServiceCategories/{business}', [Controllers\ServiceController::class, 'getAllServiceCategoryByBusiness']);
+    Route::get('/getAllBusinessServiceCategories/{business}', [Controllers\ServiceController::class, 'getAllServiceCategoryByBusiness']);
+    Route::get('/getBusinessRating/{business}', [Controllers\RatingController::class, 'getBusinessRatingAndComments']);
+    Route::get('/getAllBusinesses',[Controllers\BusinessController::class,'getAllBusinesses']);
+    Route::get('getTwoWeekSchedule/{business}', [Controllers\WorkDayController::class, 'getTwoWeekSchedule']);
+    Route::get('/getBusinessHoursForDay/{business}',[Controllers\WorkDayController::class, 'getBusinessHoursForDay']);
+
+    //-------------------Business*
+
+    //Profile
+    Route::get('/business/profile/', [Controllers\BusinessController::class, 'getProfile']);
+    Route::patch('/business/profile/edit', [Controllers\BusinessController::class, 'editProfile']);
 
 
     //Categories
@@ -60,7 +86,6 @@ Route::group(['middleware' => ['auth:sanctum']], function (){
     Route::get('/business/workday/customDayOff/get', [Controllers\WorkDayController::class, 'getCustomDaysOff']);
     Route::delete('/business/workday/customDayOff/delete/{customDayOff}', [Controllers\WorkDayController::class, 'deleteCustomDayOff']);
     Route::get('/business/workday/schedule', [Controllers\WorkDayController::class, 'getSchedule']);
-    Route::get('/business/workday/schedule/twoWeeks', [Controllers\WorkDayController::class, 'getTwoWeekSchedule']);
 
     //Services Category
     Route::post('/business/serviceCategory/create', [Controllers\ServiceController::class, 'createServiceCategory']);
@@ -74,12 +99,24 @@ Route::group(['middleware' => ['auth:sanctum']], function (){
     Route::patch('/business/services/edit/{service}', [Controllers\ServiceController::class, 'editService']);
     Route::patch('/business/services/move/{service}', [Controllers\ServiceController::class, 'moveServiceToNewCategory']);
     Route::delete('/business/services/delete/{service}', [Controllers\ServiceController::class, 'deleteService']);
-
+    Route::get('/getAllServices', [App\Http\Controllers\ServiceController::class, 'getAllServices']);
     //GroupServices
     Route::post('/business/group_services/create', [Controllers\ServiceController::class, 'createGroupService']);
     Route::patch('/business/group_services/edit/{service}', [Controllers\ServiceController::class, 'editGroupService']);
     Route::patch('/business/group_services/move/{service}', [Controllers\ServiceController::class, 'moveGroupServiceToNewCategory']);
     Route::delete('/business/group_services/delete/{service}', [Controllers\ServiceController::class, 'deleteGroupService']);
 
+    //Business Appointment
+    Route::post('/business/appointments/create/', [Controllers\AppointmentController::class, 'createAppointment']);
+    Route::get('/business/appointments/getAll',  [Controllers\AppointmentController::class, 'getAllAppointments']);
+    Route::delete('/business/appointments/delete/{appointment}',  [Controllers\AppointmentController::class, 'deleteAppointmentNoCustomer']);
+    Route::patch('/business/appointments/cancel/{appointment}',  [Controllers\AppointmentController::class, 'cancelAppointment']);
+    Route::patch('/business/appointments/edit/{appointment}',  [Controllers\AppointmentController::class, 'editAppointmentNoCustomer']);
+
+    //Appointments
+    Route::get('/appointments/get/{appointment}',  [Controllers\AppointmentController::class, 'getAppointment']);
+
+    //Ratings
+    Route::get('/business/ratings/getAll', [Controllers\RatingController::class, 'businessGetsHisRatesAndComments']);
 
 });

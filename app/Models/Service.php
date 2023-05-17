@@ -13,10 +13,23 @@ class Service extends Model
         'price',
         'duration_minutes',
         'service_category_id',
+        'business_id'
     ];
 
     public function service_category():BelongsTo
     {
         return $this->belongsTo(ServiceCategory::class);
+    }
+    public function business():BelongsTo
+    {
+        return $this->belongsTo(Business::class);
+    }
+    public function appointments()
+    {
+        return $this->belongsToMany(Appointment::class, 'appointment_services', 'service_id', 'appointment_id');
+    }
+    public function appointmentsNoCustomer()
+    {
+        return $this->belongsToMany(Appointment::class, 'appointment_services', 'service_id', 'appointment_no_customers_id');
     }
 }

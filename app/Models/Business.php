@@ -51,9 +51,9 @@ class Business extends Model
         return $this->hasMany(Picture::class);
     }
 
-    public function week_days()
+    public function workDays()
     {
-        return $this->hasMany(WeekDay::class);
+        return $this->hasMany(WorkDay::class);
     }
 
     public function custom_days_off()
@@ -63,5 +63,17 @@ class Business extends Model
 
     public function service_categories(){
         return $this->hasMany(ServiceCategory::class);
+    }
+    public function services(){
+        return $this->hasMany(Service::class);
+    }
+
+    public function ratings(){
+        return $this->hasMany(Rating::class);
+    }
+
+    public function getAverageRatingAttribute()
+    {
+        return $this->ratings->avg('rate');
     }
 }

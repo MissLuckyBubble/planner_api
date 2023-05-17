@@ -4,14 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCustomDayOffRequest;
 use App\Http\Requests\StoreWorkDayRequest;
-use App\Http\Resources\CustomDaysOffResource;
 use App\Http\Resources\WorkDayResource;
+use App\Models\Appointment;
+use App\Models\AppointmentNoCustomer;
 use App\Models\Business;
 use App\Models\CustomDayOff;
 use App\Models\WeekDay;
 use App\Models\WorkDay;
 use App\Traits\HttpResponses;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class WorkDayController extends Controller
@@ -116,20 +118,20 @@ class WorkDayController extends Controller
         ];
     }
 
-    public function getTwoWeekSchedule()
+    public function getTwoWeekSchedule(Business $business)
     {
         $now = Carbon::now();
         $tomorrow = $now->addDay();
 
         $schedule = [];
 
-        for ($i = 0; $i < 14; $i++) {
+        for ($i = 0; $i < 30; $i++) {
             $date = $tomorrow->format('Y-m-d');
             $weekday = WeekDay::where('name_eng', $tomorrow->format('l'))->first();
 
-            $workDay = WorkDayResource::collection(WorkDay::where('business_id', Auth::user()->business->id)
+            $workDay = WorkDayResource::collection(WorkDay::where('business_id', $business->id)
                 ->where('weekday_id', $weekday->id)->get())->first();
-            $customDayOff = CustomDayOff::where('business_id', Auth::user()->business->id)
+            $customDayOff = CustomDayOff::where('business_id', $business->id)
                 ->where('date', $date)
                 ->first();
 
@@ -148,10 +150,74 @@ class WorkDayController extends Controller
                     'data' => $workDay
                 ];
             }
-
-
             $tomorrow->addDay();
         }
         return $schedule;
+    }
+    public function getBusinessHoursForDay(Request $request, Business $business){
+        $validatedData = $request->validate([
+            'date' => 'required|date',
+        ]);
+
+        $date = Carbon::parse($validatedData['date']);
+
+        $customDayOff = CustomDayOff::where('business_id', $business->id)
+            ->where('date', $date)
+            ->first();
+        if($customDayOff){
+            return $this->error('','The business is off on this day');
+        }
+        $weekday = WeekDay::where('name_eng', $date->format('l'))->first();
+
+        $businessDay = WorkDay::where('business_id', $business->id)
+            ->where('weekday_id',$weekday->id)->first();
+        if($businessDay->is_off){
+            return $this->error('','The business is off on this day');
+        }
+
+        $appointments = Appointment::where('business_id',$business->id)
+            ->where('date',$date)
+            ->where('status','Запазен')->get();
+        $appointmentsNoCustomer = AppointmentNoCustomer::where('business_id',$business->id)
+            ->where('date',$date)
+            ->where('status','Запазен')->get();
+
+        $startDateTime = Carbon::parse($businessDay->start_time);
+        $endDateTime = Carbon::parse($businessDay->end_time);
+        $pauseStartDateTime = Carbon::parse($businessDay->pause_start);
+        $pauseEndDateTime = Carbon::parse($businessDay->pause_end);
+
+        $workHours = [];
+        $currentDateTime = $startDateTime;
+
+        while ($currentDateTime < $endDateTime) {
+            if (
+                $currentDateTime >= $pauseStartDateTime &&
+                $currentDateTime < $pauseEndDateTime
+            ) {
+                $currentDateTime = $pauseEndDateTime;
+            } else {
+
+                $hasAppointment = $appointments->filter(function ($appointment) use ($currentDateTime) {
+                    $startTime = Carbon::parse($appointment->start_time);
+                    $endTime = Carbon::parse($appointment->end_time);
+                    return $currentDateTime >= $startTime && $currentDateTime < $endTime;
+                })->isNotEmpty();
+
+                $hasAppointmentNoCustomer = $appointmentsNoCustomer->filter(function ($appointment) use ($currentDateTime) {
+                    $startTime = Carbon::parse($appointment->start_time);
+                    $endTime = Carbon::parse($appointment->end_time);
+                    return $currentDateTime >= $startTime && $currentDateTime < $endTime;
+                })->isNotEmpty();
+
+                if (!$hasAppointment && !$hasAppointmentNoCustomer) {
+                    $workHours[] = $currentDateTime->format('H:i');
+                }
+
+                $currentDateTime->addMinutes(10);
+            }
+        }
+
+        return $workHours;
     }
 }

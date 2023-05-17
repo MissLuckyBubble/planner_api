@@ -24,7 +24,7 @@ class CustomerRequest extends FormRequest
         return [
             'name' => ['max:255'],
             'birth_day' => ['required', 'date_format:Y/m/d', 'before_or_equal:' . now()->subYears(13)->format('Y-m-d')],
-            'sex' => ['in:male,female,other'],
+            'sex' => ['in:мъж,жена,друго'],
         ];
     }
 

@@ -84,13 +84,20 @@ class ServiceController extends Controller
         if ($this->isNotAuthorized($serviceCategory))
             return $this->isNotAuthorized($serviceCategory);
         $request->validated($request->all());
-        $service = Service::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'price' => $request->price,
-            'duration_minutes' => $request->duration_minutes,
-            'service_category_id' => $request->service_category_id,
-        ]);
+
+        if (Auth::user()->business != null) {
+            $service = Service::create([
+                'title' => $request->title,
+                'description' => $request->description,
+                'price' => $request->price,
+                'duration_minutes' => $request->duration_minutes,
+                'service_category_id' => $request->service_category_id,
+                'business_id' => Auth::user()->business->id
+            ]);
+        } else {
+            return $this->error('User does not have a business');
+        }
+
         return $this->success([
             'Service' => [
                 'title' => $service->title,
@@ -114,7 +121,6 @@ class ServiceController extends Controller
             'date' => $request->date,
             'start_time' => $request->start_time,
             'price' => $request->price,
-            'duration_minutes' => $request->duration_minutes,
             'duration_minutes' => $request->duration_minutes,
             'max_capacity' => $request->max_capacity,
             'service_category_id' => $request->service_category_id,
@@ -243,5 +249,19 @@ class ServiceController extends Controller
         if ($this->isNotAuthorized($serviceCategory))
             return $this->isNotAuthorized($serviceCategory);
         else return $service->delete();
+    }
+
+    public function getAllServices(Request $request){
+        $query = Service::query();
+
+        if ($request->has('title')) {
+            $query->where('title', 'like', '%' . $request->get('title') . '%')
+                ->orWhere('description', 'like', '%' . $request->get('title') . '%');
+        }
+        $services =$query->get();
+
+        return $this->success([
+            $services
+        ]);
     }
 }
