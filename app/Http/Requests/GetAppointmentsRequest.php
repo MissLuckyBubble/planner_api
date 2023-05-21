@@ -22,9 +22,9 @@ class GetAppointmentsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'date' => ['sometimes', 'date_format:Y/m/d',],
-            'date_before' => ['sometimes', 'date_format:Y/m/d',],
-            'date_after' => ['sometimes', 'date_format:Y/m/d',],
+            'date' => ['sometimes', 'date',],
+            'date_before' => ['sometimes', 'date',],
+            'date_after' => ['sometimes', 'date',],
             'status' => ['sometimes','in:Запазен,Приключен,Отказан,Неизвършен'],
             'sortBy' => ['sometimes','in:Цена,Дата,Продължителност,Статус'],
             'sortOrder' => ['sometimes','in:Възходящо,Низходящо'],

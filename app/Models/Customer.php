@@ -25,4 +25,8 @@ class Customer extends Model
     public function appointments(){
         return $this->hasMany(Appointment::class);
     }
+
+    public function customer_has_favorite_busineses(){
+        return $this->hasMany(Customer_Has_Favorite_Business::class);
+    }
 }

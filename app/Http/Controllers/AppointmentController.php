@@ -180,12 +180,12 @@ class AppointmentController extends Controller
             $appointmentNoCustomer_query->where('date', '=', $request->date);
         } else {
             if ($request->date_after) {
-                $appointment_query->where('date', '>', $request->date_after);
-                $appointmentNoCustomer_query->where('date', '>', $request->date_after);
+                $appointment_query->whereDate('date', '>', $request->date_after);
+                $appointmentNoCustomer_query->whereDate('date', '>', $request->date_after);
             }
             if ($request->date_before) {
-                $appointment_query->where('date', '<', $request->date_before);
-                $appointmentNoCustomer_query->where('date', '<', $request->date_before);
+                $appointment_query->whereDate('date', '<', $request->date_before);
+                $appointmentNoCustomer_query->whereDate('date', '<', $request->date_before);
             }
         }
         if ($request->status) {

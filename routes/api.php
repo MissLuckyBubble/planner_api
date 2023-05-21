@@ -40,6 +40,7 @@ Route::group(['middleware' => ['auth:sanctum']], function (){
     Route::get('/customer/profile', [Controllers\CustomerController::class, 'getProfile']);
     Route::patch('/customer/profile/edit', [Controllers\CustomerController::class, 'editProfile']);
     Route::post('/customer/favorites/{business}', [Controllers\CustomerController::class, 'add_delete_FavoritePlace']);
+    Route::get('/customer/favorites/getAll', [Controllers\CustomerController::class, 'getFavoriteBusinesses']);
     Route::post('/customer/appointments/create/{business}', [Controllers\CustomerController::class, 'createAppointment']);
     Route::get('/customer/appointments/getAll',  [Controllers\CustomerController::class, 'getAllAppointments']);
     Route::patch('/customer/appointments/cancel/{appointment}',  [Controllers\CustomerController::class, 'cancelAppointment']);
@@ -51,7 +52,6 @@ Route::group(['middleware' => ['auth:sanctum']], function (){
     Route::get('/getBusinessPictures/{business}', [Controllers\PhotoController::class, 'getPictureByBusiness']);
     Route::get('/getBusinessCategories/{business}', [Controllers\CategoryController::class, 'getCategoriesByBusiness']);
     Route::get('/getBusinessSchedule/{business}', [Controllers\WorkDayController::class, 'getScheduleByBusiness']);
-    Route::get('/getAllBusinessServiceCategories/{business}', [Controllers\ServiceController::class, 'getAllServiceCategoryByBusiness']);
     Route::get('/getAllBusinessServiceCategories/{business}', [Controllers\ServiceController::class, 'getAllServiceCategoryByBusiness']);
     Route::get('/getBusinessRating/{business}', [Controllers\RatingController::class, 'getBusinessRatingAndComments']);
     Route::get('/getAllBusinesses',[Controllers\BusinessController::class,'getAllBusinesses']);

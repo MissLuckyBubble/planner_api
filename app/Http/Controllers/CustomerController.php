@@ -8,6 +8,7 @@ use App\Http\Requests\CustomerRequest;
 use App\Http\Requests\GetAppointmentsRequest;
 use App\Http\Requests\StoreRateRequest;
 use App\Http\Resources\AppointmentResource;
+use App\Http\Resources\BusinessResource;
 use App\Http\Resources\CustomerResource;
 use App\Http\Resources\RatingResource;
 use App\Mail\AppointmentMail;
@@ -138,13 +139,13 @@ class CustomerController extends Controller
         $appointment_query = Appointment::where('customer_id', $user->customer->id);
 
         if ($request->date) {
-            $appointment_query->where('date', '=', $request->date);
+            $appointment_query->whereDate('date', '=', $request->date);
         } else {
             if ($request->date_after) {
-                $appointment_query->where('date', '>', $request->date_after);
+                $appointment_query->whereDate('date', '>=', $request->date_after);
             }
             if ($request->date_before) {
-                $appointment_query->where('date', '<', $request->date_before);
+                $appointment_query->whereDate('date', '<=', $request->date_before);
             }
         }
         if ($request->status) {
@@ -166,7 +167,7 @@ class CustomerController extends Controller
             ];
             $sortOrder = $sortOrderColumns[$request->sortOrder];
         } else $sortOrder = 'desc';
-        $appointmets = $appointment_query->orderBy($sortBy, $sortOrder)->orderBy('start_time', 'asc')->get();
+        $appointmets = $appointment_query->orderBy($sortBy, $sortOrder)->orderBy('start_time', 'desc')->get();
         return $this->success(AppointmentResource::collection($appointmets), 'Success', 200);
     }
 
@@ -182,5 +183,23 @@ class CustomerController extends Controller
         return new AppointmentResource($appointment);
     }
 
+    public function getFavoriteBusinesses(){
+        $customer = Auth::user()->customer;
+        $customer_has_favorite_businesses = $customer->customer_has_favorite_busineses;
+
+        $businesses = [];
+        if($customer_has_favorite_businesses)
+        foreach ($customer_has_favorite_businesses as $favorite) {
+            $business = Business::find($favorite->business_id);
+
+            if ($business) {
+                $businesses[] = $business;
+            }
+        }else {
+            return $this->error('','Няма записи',404);
+        }
+
+        return BusinessResource::collection($businesses);
+    }
 
 }

@@ -25,6 +25,6 @@ class ServiceCategory extends Model
 
     public function group_services():HasMany
     {
-        return $this->hasMany(Service::class);
+        return $this->hasMany(GroupService::class);
     }
 }

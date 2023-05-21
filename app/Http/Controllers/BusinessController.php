@@ -64,8 +64,9 @@ class BusinessController extends Controller
         }
 
         if ($request->has('category') && $request->category != '') {
-            $query->whereHas('businessHasCategories', function ($categoryQuery) use ($request) {
-                $categoryQuery->where('business_has_categories.category_id', $request->category);
+            $categoryIds = explode(',', $request->category);
+            $query->whereHas('businessHasCategories', function ($categoryQuery) use ($categoryIds) {
+                $categoryQuery->whereIn('business_has_categories.category_id', $categoryIds);
             });
         }
 

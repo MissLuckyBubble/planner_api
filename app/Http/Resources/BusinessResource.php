@@ -29,10 +29,16 @@ class BusinessResource extends JsonResource
                     'title' => $businessHasCategory->category->title,
                 ];
             }),
-            'services' => $this->services,
+            'services_category' => $this->service_categories->map(function ($serviceCategory) {
+                return [
+                    'id' => (string)$serviceCategory->id,
+                    'title' => $serviceCategory->title,
+                    'services' => $serviceCategory->services,
+                ];
+            }),
             'comments' => $this->ratings->map(function ($rating){
                 return [
-                    'id' => $rating->id,
+                    'id' => (string)$rating->id,
                     'comment' => $rating->comment,
                     'rate' => $rating->rate,
                     'customer_name' => $rating->customer->name,

@@ -67,8 +67,7 @@ class ServiceController extends Controller
     public function getAllServiceCategoryByBusiness(Business $business)
     {
         return ServiceCategoryResource::collection(
-            ServiceCategory::where(
-                'business_id', $business->id)->get());
+            ServiceCategory::where('business_id', $business->id)->get());
     }
 
     public function deleteServiceCategory(ServiceCategory $serviceCategory)

@@ -14,6 +14,7 @@ class AppointmentResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $fulladdress = $this->business->address->city . ', ' . $this->business->address->street . ' ' . $this->business->address->number . ', етаж: ' . $this->business->address->floor;
         return [
             'id' => (string)$this->id,
             'date' => $this->date,
@@ -31,6 +32,7 @@ class AppointmentResource extends JsonResource
             ],
             'business' => [
                 'data' => $this->business,
+                'address' => $fulladdress,
                 'phoneNumber' => $this->business->user->phoneNumber,
             ],
             'services' => [

@@ -142,7 +142,7 @@ class Authcontroller extends Controller
     public function forgotPassword(ForgotPasswordRequest $request)
     {
 
-        $user = User::where('email', $request->email)->firstOrFail();
+        $user = User::where('email', $request->email)->first();
         if (!$user) {
             return $this->success('','Ако данните са същестуващи ще получите имейл с код за възстановяване на вашата парола.');
         } else {
