@@ -18,6 +18,7 @@ class Business extends Model
     protected $fillable = [
         'name',
         'eik',
+        'description',
     ];
 
     /**

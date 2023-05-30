@@ -145,7 +145,7 @@ class CustomerController extends Controller
                 $appointment_query->whereDate('date', '>=', $request->date_after);
             }
             if ($request->date_before) {
-                $appointment_query->whereDate('date', '<=', $request->date_before);
+                $appointment_query->whereDate('date', '<', $request->date_before);
             }
         }
         if ($request->status) {

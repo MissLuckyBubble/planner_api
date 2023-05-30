@@ -26,7 +26,7 @@ class AppointmentController extends Controller
         return function ($query) use ($businessId, $date, $requestedTime, $requestedEndTime) {
             $query->where('business_id', $businessId)
                 ->where('date', $date)
-                ->where('status', '<>', 'Отказан')
+                ->where('status', '=', 'Запазен')
                 ->where(function ($query) use ($requestedTime, $requestedEndTime) {
                     $query->where(function ($query) use ($requestedTime, $requestedEndTime) {
                         $query->where('start_time', '>=', $requestedTime)

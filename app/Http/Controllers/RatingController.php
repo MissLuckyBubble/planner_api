@@ -37,7 +37,7 @@ class RatingController extends Controller
     }
 
     public function getBusinessRatingAndComments(Business $business){
-        $ratings = $business->ratings;
+        $ratings = $business->ratings()->orderBy('created_at', 'desc')->get();
         $averageRating = $ratings->avg('rate');
         return [
             'average_rating' => $averageRating,

@@ -21,6 +21,7 @@ class BusinessResource extends JsonResource
             'name' => $this->name,
             'address' => $fulladdress,
             'phoneNumber' =>$this->user->phoneNumber,
+            'description' =>$this->description,
             'rating' => $this->rating,
             'review_number' => count($this->ratings),
             'business_category' => $this->businessHasCategories->map(function ($businessHasCategory) {
@@ -36,16 +37,18 @@ class BusinessResource extends JsonResource
                     'services' => $serviceCategory->services,
                 ];
             }),
-            'comments' => $this->ratings->map(function ($rating){
-                return [
-                    'id' => (string)$rating->id,
-                    'comment' => $rating->comment,
-                    'rate' => $rating->rate,
-                    'customer_name' => $rating->customer->name,
-                    'customer_sex' => $rating->customer->sex,
-                    'customer_age' => Carbon::parse($rating->customer->birth_day)->age,
-                    'date' => $rating->created_at->format('d.m.y')
-                ];
+            'comments' => $this->ratings
+                ->sortByDesc('created_at')
+                ->map(function ($rating) {
+                    return [
+                        'id' => (string)$rating->id,
+                        'comment' => $rating->comment,
+                        'rate' => $rating->rate,
+                        'customer_name' => $rating->customer->name,
+                        'customer_sex' => $rating->customer->sex,
+                        'customer_age' => Carbon::parse($rating->customer->birth_day)->age,
+                        'date' => $rating->created_at->format('d.m.y')
+                    ];
             }),
             'picture'=> $this->pictures,
         ];

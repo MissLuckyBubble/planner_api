@@ -19,17 +19,30 @@ class BusinessController extends Controller
     {
         $business = Auth::user()->business;
         if ($business) {
-            return $business;
+            return new BusinessResource($business);
         } else return $this->error('','',400);
     }
 
+
     public function editProfile(Request $request)
     {
-        $business = Auth::user()->customer;
+        $business = Auth::user()->business;
 
-        $business->update([
-            'name' => $request->name,
+        $request->validate([
+            'name' => 'sometimes|string|max:100',
+            'description' => 'sometimes|string|max:255'
         ]);
+
+
+        if($request->has('name')){
+            $business->name = $request->name;
+        }
+
+        if($request->has('description')){
+            $business->description = $request->description;
+        }
+
+        $business->save();
 
         return $this->success($business);
     }
@@ -79,7 +92,7 @@ class BusinessController extends Controller
                 case 'Име':
                     $query->orderBy('name', $sortOrder);
                     break;
-                case 'Оценки':
+                case 'Рейтинг':
                     $query->orderBy('rating', $sortOrder);
                     break;
                 case 'Цена':

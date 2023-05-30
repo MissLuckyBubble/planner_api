@@ -28,8 +28,8 @@ class getAllBusinessesRequest extends FormRequest
             'rating' => ['sometimes', 'between:1-5',],
             'page'=>['sometimes','integer'],
             'per_page'=>['sometimes','integer'],
-            'sortBy' => ['sometimes','in:Име,Оценки'],
-            'sortOrder' => ['sometimes','in:Възходящо,Низходящо'],
+            'sortBy' => ['sometimes','in:Име,Рейтинг','nullable'],
+            'sortOrder' => ['sometimes','in:asc,desc', 'nullable'],
         ];
     }
 }
