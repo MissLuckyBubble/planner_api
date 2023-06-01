@@ -68,7 +68,7 @@ class BusinessController extends Controller
 
         if ($request->has('city') && $request->city != '') {
             $query->whereHas('address', function ($addressQuery) use ($request) {
-                $addressQuery->where('city', 'like', '%' . $request->get('city') . '%' );
+                $addressQuery->where('description', 'like', '%' . $request->get('city') . '%' );
             });
         }
 

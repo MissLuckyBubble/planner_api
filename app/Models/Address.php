@@ -15,7 +15,9 @@ class Address extends Model
         'street',
         'number',
         'floor',
-        'description'
+        'description',
+        'latitude',
+        'longitude'
     ];
 
     protected $hidden = [

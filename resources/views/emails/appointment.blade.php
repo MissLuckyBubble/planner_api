@@ -8,12 +8,7 @@
     <p>
         Данни за запазения час: <br/>
         Име на фирмата: {{ $business->name}}<br/>
-        Адрес:
-            {{ $address->city}}
-            {{ $address->street ? ', ' . $address->street : '' }}
-            {{ $address->number ? $address->number : '' }}
-            {{ $address->floor  ? ', етаж: ' . $address->floor : ''}}<br/>
-        {{$address->description ? 'Допълнителна информация за адреса: ' . $address->description : ''}}<br/>
+        Адрес:{{$address->description}}<br/>
         Дата: {{ $appointment->date->format('d.m.Y') }}<br/>
         Начален час: {{ $appointment->start_time->format('H:i')}}<br/>
         Избраните от вас услуги са:

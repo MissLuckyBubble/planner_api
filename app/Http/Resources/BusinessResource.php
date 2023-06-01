@@ -15,11 +15,14 @@ class BusinessResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $fulladdress = $this->address->city . ', ' . $this->address->street . ' ' . $this->address->number . ', етаж: ' . $this->address->floor;
         return [
             'id' => (string)$this->id,
             'name' => $this->name,
-            'address' => $fulladdress,
+            'address' => [
+                'description' => $this->address->description,
+                'latitude' => $this->address->latitude,
+                'longitude' => $this->address->longitude
+            ],
             'phoneNumber' =>$this->user->phoneNumber,
             'description' =>$this->description,
             'rating' => $this->rating,

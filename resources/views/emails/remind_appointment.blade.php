@@ -9,11 +9,7 @@
         Искаме да ви напомним за предстоящия Ви час утре,
     @endif
     {{ \Carbon\Carbon::parse($appointment->date)->format('d.m.Y') }} в {{ \Carbon\Carbon::parse($appointment->start_time)->format('H:i')}} часа,
-    при <b>{{$business->name}}</b>,
-    {{ $address->city}}
-    {{ $address->street ? ', ' . $address->street : '' }}
-    {{ $address->number ? $address->number : '' }}
-    {{ $address->floor  ? ', етаж: ' . $address->floor : ''}}<br/> .
+    при <b>{{$business->name}}</b>, {{$address->description}}.
     Услугите които сте запазили са: <br/>
     <ul>
         @foreach ($appointment->services as $service)

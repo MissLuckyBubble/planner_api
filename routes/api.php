@@ -68,7 +68,7 @@ Route::group(['middleware' => ['auth:sanctum']], function (){
     //Categories
     Route::get('/business/categories/getAll', [Controllers\CategoryController::class, 'getBusinessCategories']);
     Route::post('/business/categories/set', [Controllers\CategoryController::class, 'setCategoryToBusiness']);
-    Route::delete('/business/categories/delete/{businessHasCategory}', [Controllers\CategoryController::class, 'deleteCategoryFromBusiness']);
+    Route::patch('/business/categories/remove', [Controllers\CategoryController::class, 'deleteCategoryFromBusiness']);
 
     //Addresses
     Route::put('/business/address/edit', [Controllers\AddressController::class, 'editAddress']);

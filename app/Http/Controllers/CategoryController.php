@@ -29,22 +29,51 @@ class CategoryController extends Controller
         );
     }
 
-   public function setCategoryToBusiness(setCategoryToBusinessRequest $request){
-       $request->validated($request->all());
-       $category = BusinessHasCategory::create([
-          'business_id' => Auth::user()->business->id,
-           'category_id' => $request->category_id
-       ]);
-       return new BusinessHasCategoryResource($category);
-   }
+    public function setCategoryToBusiness(setCategoryToBusinessRequest $request)
+    {
+        $validatedData = $request->validated();
+        $business = Auth::user()->business;
 
-   public function deleteCategoryFromBusiness(BusinessHasCategory $businessHasCategory){
-       return $this->isNotAuthorized($businessHasCategory) ? $this->isNotAuthorized($businessHasCategory) : $businessHasCategory->delete();
-   }
+        $categoryIds = explode(',', $validatedData['category_id']);
 
-   private  function isNotAuthorized(BusinessHasCategory $businessHasCategory){
-       if(Auth::user()->business->id !== $businessHasCategory->business->id){
-            return $this->error('', 'You are not authorized to make this request', 403);
+        collect($categoryIds)->map(function ($categoryId) use ($business) {
+            $bhc = BusinessHasCategory::where('business_id', $business->id)
+                ->where('category_id', $categoryId)->first();
+            if ($bhc == null) {
+                BusinessHasCategory::create([
+                    'business_id' => $business->id,
+                    'category_id' => $categoryId]);
+            }
+        });
+
+        return BusinessHasCategoryResource::collection($business->businessHasCategories);
+    }
+
+   public function deleteCategoryFromBusiness(setCategoryToBusinessRequest $request){
+       $validatedData = $request->validated();
+       $business = Auth::user()->business;
+       $categoryIds = explode(',', $validatedData['category_id']);
+
+       $hasError = false;
+       collect($categoryIds)->map(function ($categoryId) use ($business, &$hasError) {
+           $bhc = BusinessHasCategory::where('business_id', $business->id)
+               ->where('category_id', $categoryId)->first();
+           if ($bhc == null) {
+               $hasError = true;
+           }
+       });
+
+       if ($hasError) {
+           return $this->error('', 'You are not authorized to make this request', 403);
        }
+
+       collect($categoryIds)->each(function ($categoryId) use ($business) {
+           BusinessHasCategory::where('category_id', $categoryId)
+               ->where('business_id', $business->id)
+               ->delete();
+       });
+
+       return BusinessHasCategoryResource::collection($business->businessHasCategories);
    }
+
 }

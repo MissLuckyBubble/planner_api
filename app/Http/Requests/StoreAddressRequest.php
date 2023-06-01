@@ -25,9 +25,11 @@ class StoreAddressRequest extends FormRequest
             'city' => ['required', 'string'],
             'street'=> ['required', 'string'],
             'number' =>['integer'],
-            'floor' =>['required','integer'],
+            'floor' =>['integer'],
             'postal_code' =>['required'],
-            'description' =>['max:255'],
+            'description' =>['max:255', 'required'],
+            'latitude' => ['required', 'regex:/^\-?\d{1,3}\.\d{1,7}$/'],
+            'longitude' => ['required', 'regex:/^\-?\d{1,3}\.\d{1,7}$/'],
         ];
     }
 

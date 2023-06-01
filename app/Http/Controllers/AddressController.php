@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAddressRequest;
 use App\Http\Resources\AddressResource;
+use App\Http\Resources\BusinessResource;
 use App\Models\Address;
 use App\Models\Business;
 use App\Traits\HttpResponses;
@@ -19,13 +20,15 @@ class AddressController extends Controller
         $address->update([
             'city' => $request->city,
             'street' => $request->street,
-            'number'=> $request->number,
-            'floor'=> $request->floor,
+            'number'=> $request->number? $request->number : 0,
+            'floor'=> $request->floor? $request->floor : 0,
             'postal_code' => $request->postal_code,
-            'description'=> $request->description
+            'description'=> $request->description,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude
         ]);
         return $this->success([
-            'address' => $address,
+            new BusinessResource(Auth::user()->business)
         ]);
     }
     public  function getAddress(){
