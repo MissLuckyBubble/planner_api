@@ -30,7 +30,7 @@ class BusinessController extends Controller
 
         $request->validate([
             'name' => 'sometimes|string|max:100',
-            'description' => 'sometimes|string|max:255'
+            'description' => 'sometimes|string|max:500'
         ]);
 
 
