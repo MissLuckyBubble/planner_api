@@ -171,8 +171,8 @@ class WorkDayController extends Controller
 
         $businessDay = WorkDay::where('business_id', $business->id)
             ->where('weekday_id',$weekday->id)->first();
-        if($businessDay->is_off){
-            return $this->error('','The business is off on this day');
+        if($businessDay->is_off && Auth::user()->role_id==1){
+            return $this->error('','The business is off on this day',404);
         }
 
         $appointments = Appointment::where('business_id',$business->id)
