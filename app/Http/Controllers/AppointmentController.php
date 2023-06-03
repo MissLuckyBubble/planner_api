@@ -131,7 +131,7 @@ class AppointmentController extends Controller
 
         $appointment = AppointmentNoCustomer::create([
             'business_id' => $business->id,
-            'date' => Carbon::createFromFormat('Y/m/d', $request->date),
+            'date' => $request->date,
             'start_time' => Carbon::createFromFormat('H:i', $request->start_time),
             'end_time' => Carbon::parse($request->start_time)->addMinutes($totalDuration),
             'total_price' => $totalPrice,
