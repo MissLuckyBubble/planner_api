@@ -21,7 +21,7 @@ class StoreUserRequest extends FormRequest
         'phoneNumber' => ['required', 'string', 'size:9', 'unique:users'],
         'email' => ['required', 'email:rfc,dns', 'max:255', 'unique:users'],
         'password' => ['required', 'confirmed', Password::defaults(), Password::min(8)],
-        'birth_day' => ['required', 'date_format:Y/m/d', 'before_or_equal:' . now()->subYears(13)->format('Y-m-d')],
+        'birth_day' => ['required', 'before_or_equal:' . now()->subYears(13)->format('Y-m-d')],
         ];
 
     }
