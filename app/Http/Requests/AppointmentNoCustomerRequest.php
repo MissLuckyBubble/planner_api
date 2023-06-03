@@ -23,7 +23,7 @@ class AppointmentNoCustomerRequest extends FormRequest
     {
         $today = now()->format('Y/m/d');
         return [
-            'date' => ['required', 'date_format:Y/m/d', 'after_or_equal:today'],
+            'date' => ['required', 'after_or_equal:today'],
             'start_time' => ['required', 'date_format:H:i',
                 function ($attribute, $value, $fail) use ($today) {
                     if ($this->date === $today && $value <= now()->format('H:i')) {
