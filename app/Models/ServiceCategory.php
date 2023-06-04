@@ -23,8 +23,8 @@ class ServiceCategory extends Model
         return $this->hasMany(Service::class);
     }
 
-    public function group_services():HasMany
+    public function group_appointments():HasMany
     {
-        return $this->hasMany(GroupService::class);
+        return $this->hasMany(GroupAppointment::class);
     }
 }

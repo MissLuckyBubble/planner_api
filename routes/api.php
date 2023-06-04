@@ -100,11 +100,12 @@ Route::group(['middleware' => ['auth:sanctum']], function (){
     Route::patch('/business/services/move/{service}', [Controllers\ServiceController::class, 'moveServiceToNewCategory']);
     Route::delete('/business/services/delete/{service}', [Controllers\ServiceController::class, 'deleteService']);
     Route::get('/getAllServices', [App\Http\Controllers\ServiceController::class, 'getAllServices']);
-    //GroupServices
-    Route::post('/business/group_services/create', [Controllers\ServiceController::class, 'createGroupService']);
-    Route::patch('/business/group_services/edit/{service}', [Controllers\ServiceController::class, 'editGroupService']);
-    Route::patch('/business/group_services/move/{service}', [Controllers\ServiceController::class, 'moveGroupServiceToNewCategory']);
-    Route::delete('/business/group_services/delete/{service}', [Controllers\ServiceController::class, 'deleteGroupService']);
+    //Group Appointment
+    Route::post('/business/group_appointment/create', [Controllers\AppointmentController::class, 'createGroupAppointment']);
+    Route::patch('/business/group_appointment/add_clients/{groupAppointment}', [Controllers\AppointmentController::class, 'addClientsToGroupAppointment']);
+    Route::patch('/business/group_appointment/remove_clients/{groupAppointment}', [Controllers\AppointmentController::class, 'removeClientsFromGroupAppointment']);
+    Route::patch('/customer/group_appointment/signup/{groupAppointment}', [Controllers\CustomerController::class, 'clientSignUpForGroupAppointment']);
+    Route::patch('/customer/group_appointment/cancel/{groupAppointment}', [Controllers\CustomerController::class, 'customerCancelGroupAppointment']);
 
     //Business Appointment
     Route::post('/business/appointments/create/', [Controllers\AppointmentController::class, 'createAppointment']);

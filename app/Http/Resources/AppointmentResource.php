@@ -23,8 +23,14 @@ class AppointmentResource extends JsonResource
             'end_time' => $this->end_time,
             'status' => $this->status,
             'duration' => $this->duration,
-            'total_price' => $this->total_price,
+            'total_price' => $this->total_price ?? $this->price,
             'rated' => $rated,
+            'max_capacity' => $this->when($this->max_capacity !== null, function () {
+                return $this->max_capacity;
+            }),
+            'count_ppl' => $this->count_ppl,
+            'description' => $this->description,
+            'title' => $this->title,
             'customer' => $this->customer ? [
                 'data' => $this->customer,
                 'phoneNumber' => $this->customer->user->phoneNumber,
@@ -37,10 +43,12 @@ class AppointmentResource extends JsonResource
                 'address' => $fulladdress,
                 'phoneNumber' => $this->business->user->phoneNumber,
             ],
-            'services' => [
-                'count' => $this->services->count(),
-                'data' => $this->services
-            ]
+            'services' => $this->when($this->services !== null && $this->services->isNotEmpty(), function () {
+                return [
+                    'count' => $this->services->count(),
+                    'data' => $this->services
+                ];
+            }),
         ];
     }
 }

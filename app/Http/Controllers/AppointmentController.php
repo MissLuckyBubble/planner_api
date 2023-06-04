@@ -5,15 +5,20 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AppointmentNoCustomerRequest;
 use App\Http\Requests\GetAppointmentsRequest;
 
+use App\Http\Requests\StoreGroupAppointmentRequest;
+use App\Http\Requests\StoreServiceRequest;
 use App\Http\Resources\AppointmentResource;
 use App\Mail\CancelAppointmentMail;
 use App\Models\Appointment;
 use App\Models\AppointmentNoCustomer;
 use App\Models\CustomDayOff;
+use App\Models\GroupAppointment;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\WorkDay;
 use App\Traits\HttpResponses;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -63,37 +68,44 @@ class AppointmentController extends Controller
             ->where('date', $requestedDate)
             ->first();
 
-        if (!$businessWorkday || $customDayOff) {
-            return $this->error('', 'Бизнесът не работи на този ден.', 400);
-        }
+        if(Auth::user()->role_id == 1) {
+            if (!$businessWorkday || $customDayOff) {
+                return $this->error('', 'Бизнесът не работи на този ден.', 400);
+            }
 
-        $workdayStartTime = Carbon::parse($businessWorkday->start_time);
-        $workdayEndTime = Carbon::parse($businessWorkday->end_time);
+            $workdayStartTime = Carbon::parse($businessWorkday->start_time);
+            $workdayEndTime = Carbon::parse($businessWorkday->end_time);
 
-        if ($businessWorkday->pause_start && $businessWorkday->pause_end) {
-            $workdayPauseStart = Carbon::parse($businessWorkday->pause_start);
-            $workdayPauseEnd = Carbon::parse($businessWorkday->pause_end);
-        }
+            if ($businessWorkday->pause_start && $businessWorkday->pause_end) {
+                $workdayPauseStart = Carbon::parse($businessWorkday->pause_start);
+                $workdayPauseEnd = Carbon::parse($businessWorkday->pause_end);
+            }
 
-        if ($requestedTime < $workdayStartTime || $requestedTime >= $workdayEndTime || $requestedEndTime > $workdayEndTime) {
-            return $this->error('', 'Избраният час е извънработното време на бизнесът за този ден.', 400);
-        }
+            if ($requestedTime < $workdayStartTime || $requestedTime >= $workdayEndTime || $requestedEndTime > $workdayEndTime) {
+                return $this->error('', 'Избраният час е извънработното време на бизнесът за този ден.', 400);
+            }
 
-        if (isset($workdayPauseStart) && isset($workdayPauseEnd)) {
-            if (($requestedTime > $workdayPauseStart && $requestedTime < $workdayPauseEnd) ||
-                ($requestedEndTime > $workdayPauseStart && $requestedEndTime < $workdayPauseEnd)) {
-                return $this->error('', 'Бизнесът е почивка за избраният часови период.', 403);
+            if (isset($workdayPauseStart) && isset($workdayPauseEnd)) {
+                if (($requestedTime > $workdayPauseStart && $requestedTime < $workdayPauseEnd) ||
+                    ($requestedEndTime > $workdayPauseStart && $requestedEndTime < $workdayPauseEnd)) {
+                    return $this->error('', 'Бизнесът е почивка за избраният часови период.', 403);
+                }
             }
         }
-
         $overlappingAppointments = Appointment::where(
             $this->overlappingAppointmentsQuery($businessId, $requestedDate, $requestedTime, $requestedEndTime))->get();
         $overlappingAppointmentsNoCustomer = AppointmentNoCustomer::where(
             $this->overlappingAppointmentsQuery($businessId, $requestedDate, $requestedTime, $requestedEndTime))->get();
+        $overlappingGroupAppointments = GroupAppointment::where(
+            $this->overlappingAppointmentsQuery($businessId, $requestedDate, $requestedTime, $requestedEndTime))->get();
 
-        if ($overlappingAppointments->count() > 0 || $overlappingAppointmentsNoCustomer->count() > 0) {
+        if ($overlappingAppointments->count() > 0 ||
+            $overlappingAppointmentsNoCustomer->count() > 0 ||
+            $overlappingGroupAppointments->count() > 0)
+        {
             return $this->error('', 'Бизнесът е зает за този период.', 400);
         }
+
     }
 
 
@@ -116,18 +128,14 @@ class AppointmentController extends Controller
         $totalDuration = 0;
         foreach ($services as $service) {
             $totalPrice += $service->price;
-            $totalDuration += $service->duration_minutes;
+            $totalDuration += $service->duration;
         }
 
-        $requestedEndTime = Carbon::parse($request->start_time)->addMinutes($totalDuration);
-        $overlappingAppointments = Appointment::where(
-            $this->overlappingAppointmentsQuery($business->id, $request->date, $request->start_time, $requestedEndTime))->get();
-        $overlappingAppointmentsNoCustomer = AppointmentNoCustomer::where(
-            $this->overlappingAppointmentsQuery($business->id, $request->date, $request->start_time, $requestedEndTime))->get();
-
-        if ($overlappingAppointments->count() > 0 || $overlappingAppointmentsNoCustomer->count() > 0) {
-            return $this->error('', 'Бизнесът е зает за този период.', 400);
+        if($this->checkBusinessAvailability($business->id, $request->date, $request->start_time, $totalDuration))
+        {
+            return $this->checkBusinessAvailability($business->id, $request->date, $request->start_time, $totalDuration);
         }
+
 
         $appointment = AppointmentNoCustomer::create([
             'business_id' => $business->id,
@@ -175,22 +183,28 @@ class AppointmentController extends Controller
 
         $appointment_query = Appointment::where('business_id', $user->business->id);
         $appointmentNoCustomer_query = AppointmentNoCustomer::where('business_id', $user->business->id);
+        $groupAppointment_query = GroupAppointment::where('business_id', $user->business->id);
         if ($request->date) {
             $appointment_query->where('date', '=', $request->date);
             $appointmentNoCustomer_query->where('date', '=', $request->date);
+            $groupAppointment_query->where('date', '=', $request->date);
         } else {
             if ($request->date_after) {
                 $appointment_query->whereDate('date', '>', $request->date_after);
                 $appointmentNoCustomer_query->whereDate('date', '>', $request->date_after);
+                $groupAppointment_query->where('date', '>', $request->date_after);
+
             }
             if ($request->date_before) {
                 $appointment_query->whereDate('date', '<', $request->date_before);
                 $appointmentNoCustomer_query->whereDate('date', '<', $request->date_before);
+                $groupAppointment_query->whereDate('date', '<', $request->date_before);
             }
         }
         if ($request->status) {
             $appointment_query->where('status', '=', $request->status);
             $appointmentNoCustomer_query->where('status', '=', $request->status);
+            $groupAppointment_query->where('status', '=', $request->status);
         }
         if ($request->sortBy) {
             $sortByColumns = [
@@ -210,7 +224,11 @@ class AppointmentController extends Controller
         } else $sortOrder = 'desc';
         $appointments = $appointment_query->get();
         $appointmentsNoCustomer = $appointmentNoCustomer_query->get();
-        $all = AppointmentResource::collection($appointments)->merge(AppointmentResource::collection($appointmentsNoCustomer));
+        $groupAppointment = $groupAppointment_query->get();
+        $all =
+            AppointmentResource::collection($appointments)
+                ->merge(AppointmentResource::collection($appointmentsNoCustomer))
+                ->merge(AppointmentResource::collection($groupAppointment));
         $all = $all->sortBy('start_time')->sortBy($sortBy);
         if ($sortOrder === 'desc') {
             $all = $all->reverse();
@@ -269,17 +287,12 @@ class AppointmentController extends Controller
         $totalDuration = 0;
         foreach ($services as $service) {
             $totalPrice += $service->price;
-            $totalDuration += $service->duration_minutes;
+            $totalDuration += $service->duration;
         }
 
-        $requestedEndTime = Carbon::parse($request->start_time)->addMinutes($totalDuration);
-        $overlappingAppointments = Appointment::where(
-            $this->overlappingAppointmentsQuery($business->id, $request->date, $request->start_time, $requestedEndTime))->where('id', '!=', $appointment->id)->get();
-        $overlappingAppointmentsNoCustomer = AppointmentNoCustomer::where(
-            $this->overlappingAppointmentsQuery($business->id, $request->date, $request->start_time, $requestedEndTime))->where('id', '!=', $appointment->id)->get();
-
-        if ($overlappingAppointments->count() > 0 || $overlappingAppointmentsNoCustomer->count() > 0) {
-            return $this->error('', 'Бизнесът е зает за този период.', 400);
+        if($this->checkBusinessAvailability($business->id, $request->date, $request->start_time, $totalDuration))
+        {
+            return $this->checkBusinessAvailability($business->id, $request->date, $request->start_time, $totalDuration);
         }
 
         $appointment->services()->detach();
@@ -312,6 +325,131 @@ class AppointmentController extends Controller
         if ($services->count() != count($request_services)) {
             return false;
         } else return $services;
+    }
+
+    public function createGroupAppointment(StoreGroupAppointmentRequest $request)
+    {
+        if (Auth::user()->role_id != 2) {
+            return $this->error('', 'Грешка. Не може да създавате групова среща, ако не сте бизнес.', 400);
+        }
+
+        $business = Auth::user()->business;
+        $request->validated($request->all());
+
+        if($this->checkBusinessAvailability($business->id, $request->date, $request->start_time, $request->duration))
+        {
+            return $this->checkBusinessAvailability($business->id, $request->date, $request->start_time, $request->duration);
+        }
+
+        $appointment = GroupAppointment::create([
+            'title' => $request->title,
+            'business_id' =>$business->id,
+            'description' => $request->description,
+            'date' => $request->date,
+            'start_time' => $request->start_time,
+            'end_time' => Carbon::parse($request->start_time)->addMinutes($request->duration),
+            'price' => $request->price,
+            'duration' => $request->duration,
+            'max_capacity' => $request->max_capacity,
+            'status' => 'Запазен',
+            'service_category_id' => $request->service_category_id,
+        ]);
+
+        return $this->success([
+            new AppointmentResource($appointment)
+        ]);
+    }
+
+    public function addClientsToGroupAppointment(GroupAppointment $groupAppointment, Request $request){
+        if (Auth::user()->role_id != 2) {
+            return $this->error('', 'Грешка. Не може да създавате групова среща, ако не сте бизнес.', 400);
+        }
+        $request->validate([
+            'count' =>['required', 'integer'],
+        ]);
+        if($groupAppointment->count_ppl + $request->count > $groupAppointment->max_capacity)
+        {
+            return $this->error('','Надвишавате избрания максимален капацитет.',422);
+        }
+        $groupAppointment->update(
+            ['count_ppl' => $groupAppointment->count_ppl + $request->count]
+        );
+        return $this->success($groupAppointment);
+    }
+    public function removeClientsFromGroupAppointment(GroupAppointment $groupAppointment, $request){
+        if (Auth::user()->role_id != 2) {
+            return $this->error('', 'Грешка. Не може да създавате групова среща, ако не сте бизнес.', 400);
+        }
+        $request->validate([
+            'count' =>['required', 'integer|min:0'],
+        ]);
+        if($groupAppointment->count_ppl - $request->count < $groupAppointment->group_appointment_has_customers->count())
+        {
+            return $this->error('','Можете да премахвате само бройка която сте добавили ръчно.',422);
+        }
+        $groupAppointment->update(
+            ['count_ppl' => $groupAppointment->count_ppl - $request->count]
+        );
+        return $this->success($groupAppointment);
+    }
+    public function editGroupService(StoreServiceRequest $request, GroupAppointment $service)
+    {
+        $serviceCategory = ServiceCategory::findOrFail($service->service_category_id);
+        if ($this->isNotAuthorized($serviceCategory))
+            return $this->isNotAuthorized($serviceCategory);
+        $serviceCategory = ServiceCategory::findOrFail($request->service_category_id);
+        if ($this->isNotAuthorized($serviceCategory))
+            return $this->isNotAuthorized($serviceCategory);
+        $request->validated($request->all());
+        $service->update([
+            'title' => $request->title,
+            'description' => $request->description,
+            'date' => $request->date,
+            'start_time' => $request->start_time,
+            'price' => $request->price,
+            'duration' => $request->duration,
+            'max_capacity' => $request->max_capacity,
+            'status' => 'Запазен',
+            'service_category_id' => $request->service_category_id,
+        ]);
+        return $this->success([
+            'Appointment' => [
+                'id' => $service->id,
+                'description' => $service->description,
+                'date' => $request->date,
+                'start_time' => $request->start_time,
+                'price' => $service->price . ' BGN',
+                'duration' => $service->duration,
+                'max_capacity' => $request->max_capacity,
+            ],
+            'Category' => $service->service_category
+        ]);
+    }
+
+    public function moveGroupServiceToNewCategory(GroupAppointment $service, Request $request)
+    {
+        $serviceCategory = ServiceCategory::findOrFail($service->service_category_id);
+        if ($this->isNotAuthorized($serviceCategory))
+            return $this->isNotAuthorized($serviceCategory);
+        $serviceCategory = ServiceCategory::findOrFail($request->id);
+        if ($this->isNotAuthorized($serviceCategory))
+            return $this->isNotAuthorized($serviceCategory);
+        if ($request->id == null || $request->id == '') {
+            return $this->error('', 'Вашата заявка не моеже да бъде обработена', 422);
+        }
+        $service->update(['service_category_id' => $request->id]);
+        return $this->success([
+            'Group_Service' => $service,
+            'Category' => $service->service_category
+        ]);
+    }
+
+    public function deleteGroupService(GroupAppointment $service)
+    {
+        $serviceCategory = ServiceCategory::findOrFail($service->service_category_id);
+        if ($this->isNotAuthorized($serviceCategory))
+            return $this->isNotAuthorized($serviceCategory);
+        else return $service->delete();
     }
 
 }

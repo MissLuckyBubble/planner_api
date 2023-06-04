@@ -6,6 +6,7 @@ use App\Models\Address;
 use App\Models\Appointment;
 use App\Models\Business;
 use App\Models\Customer;
+use App\Models\GroupAppointment;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -16,20 +17,21 @@ class AppointmentMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-
     public Customer $customer;
     public Business $business;
     public Address $address;
-    public Appointment $appointment;
-
+    public $appointment;
 
     public function __construct($customer, $business, $appointment)
     {
         $this->customer = $customer;
         $this->business = $business;
-        $this->appointment = $appointment;
         $this->address = $business->address;
+
+        $this->appointment = $appointment;
+
     }
+
 
     /**
      * Get the message envelope.

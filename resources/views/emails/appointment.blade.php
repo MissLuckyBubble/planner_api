@@ -9,15 +9,21 @@
         Данни за запазения час: <br/>
         Име на фирмата: {{ $business->name}}<br/>
         Адрес:{{$address->description}}<br/>
-        Дата: {{ $appointment->date->format('d.m.Y') }}<br/>
-        Начален час: {{ $appointment->start_time->format('H:i')}}<br/>
+        Дата: {{ $appointment->date }}<br/>
+        Начален час: {{ $appointment->start_time}}<br/>
+        @if($appointment->services)
         Избраните от вас услуги са:
     <ul>
         @foreach ($appointment->services as $service)
             <li>{{ $service->title}} - {{ $service->price}} лв. ({{$service->duration_minutes}}мин.)</li>
         @endforeach
     </ul>
-    Обща сума: {{$appointment->total_price}} лв.<br>
+    Обща сума: {{$appointment->total_price}} лв.<br/>
+    @else
+        Име на груповата среща: {{$appointment->title}}<br/>
+        Описание: {{$appointment->description}}<br/>
+        Обща сума: {{$appointment->price}} лв.<br/>
+    @endif
     Общо времетраене: {{$appointment->duration}} мин.
     <hr>
     <p>

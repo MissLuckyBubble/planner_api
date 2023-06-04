@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreServiceRequest extends FormRequest
+class StoreGroupAppointmentRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -21,13 +21,22 @@ class StoreServiceRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+
+        $today = now()->format('Y/m/d');
+        return  [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'duration_minutes' => 'required|numeric|min:0',
+            'duration' => 'required|numeric|min:0',
             'service_category_id' => 'nullable|exists:service_categories,id',
-        ];
+            'max_capacity' => 'required|numeric|min:1',
+            'date' => ['required', 'after_or_equal:today'],
+            'start_time' => ['required', 'date_format:H:i',
+                function ($attribute, $value, $fail) use ($today) {
+                    if ($this->date === $today && $value <= now()->format('H:i')) {
+                        $fail('Не може да запазите час по-рано то сегашния момент.');
+                    }
+                }]];
 
     }
 

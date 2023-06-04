@@ -15,7 +15,7 @@ class CancelAppointmentMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public Appointment $appointment;
+    public $appointment;
     public Business $business;
     public Customer $customer;
 

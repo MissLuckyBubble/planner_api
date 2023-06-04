@@ -11,18 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('group_services', function (Blueprint $table) {
+        Schema::create('group_appointments', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
+            $table->unsignedBigInteger('business_id');
             $table->unsignedBigInteger('service_category_id');
+            $table->string('title');
             $table->text('description');
             $table->decimal('price',8,2);
             $table->date('date');
             $table->time('start_time');
-            $table->integer('duration_minutes');
+            $table->time('end_time');
+            $table->integer('duration');
             $table->integer('max_capacity');
+            $table->integer('count_ppl')->default(0);
+            $table->string('status');
             $table->timestamps();
-
+            $table->integer('reminders')->default(0);
+            $table->foreign('service_category_id')->references('id')->on('businesses')->onDelete('cascade');
             $table->foreign('service_category_id')->references('id')->on('service_categories')->onDelete('cascade');
         });
     }
@@ -32,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('group_services');
+        Schema::dropIfExists('group_appointments');
     }
 };

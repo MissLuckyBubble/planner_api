@@ -11,7 +11,7 @@ class Service extends Model
         'title',
         'description',
         'price',
-        'duration_minutes',
+        'duration',
         'service_category_id',
         'business_id'
     ];

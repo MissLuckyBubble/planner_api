@@ -27,17 +27,19 @@ class BusinessResource extends JsonResource
             'description' =>$this->description,
             'rating' => $this->rating,
             'review_number' => count($this->ratings),
-            'business_category' => $this->businessHasCategories->map(function ($businessHasCategory) {
+            'business_category' =>[ $this->businessHasCategories->map(function ($businessHasCategory) {
                 return [
                     'id' => $businessHasCategory->category->id,
                     'title' => $businessHasCategory->category->title,
                 ];
-            }),
+            })],
             'services_category' => $this->service_categories->map(function ($serviceCategory) {
                 return [
                     'id' => (string)$serviceCategory->id,
                     'title' => $serviceCategory->title,
-                    'services' => $serviceCategory->services,
+                    'services' => array_merge($serviceCategory->services->toArray(),    $serviceCategory->group_appointments
+                        ->where('date', '>', now())
+                        ->toArray())
                 ];
             }),
             'comments' => $this->ratings
