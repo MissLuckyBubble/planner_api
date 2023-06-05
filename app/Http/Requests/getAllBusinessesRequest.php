@@ -30,6 +30,9 @@ class getAllBusinessesRequest extends FormRequest
             'per_page'=>['sometimes','integer'],
             'sortBy' => ['sometimes','in:Име,Рейтинг','nullable'],
             'sortOrder' => ['sometimes','in:asc,desc', 'nullable'],
+            'latitude' => ['sometimes', 'regex:/^\-?\d{1,3}\.\d{1,7}$/'],
+            'longitude' => ['sometimes', 'regex:/^\-?\d{1,3}\.\d{1,7}$/'],
+            'distance' => ['sometimes', 'integer']
         ];
     }
 }
