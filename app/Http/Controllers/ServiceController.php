@@ -82,6 +82,7 @@ class ServiceController extends Controller
         $serviceCategory = ServiceCategory::findOrFail($request->service_category_id);
         if ($this->isNotAuthorized($serviceCategory))
             return $this->isNotAuthorized($serviceCategory);
+
         $request->validated($request->all());
 
         if (Auth::user()->business != null) {
@@ -156,12 +157,15 @@ class ServiceController extends Controller
     }
 
 
-    public function deleteService(Service $service)
+    public function disableService(Service $service)
     {
         $serviceCategory = ServiceCategory::findOrFail($service->service_category_id);
-        if ($this->isNotAuthorized($serviceCategory))
-            return $this->isNotAuthorized($serviceCategory);
-        else return $service->delete();
+        $isNotAuthorized = $this->isNotAuthorized($serviceCategory);
+        if ($isNotAuthorized) {
+            return $isNotAuthorized;
+        }
+        $service->update(['disabled' => true]);
+        return $this->success($service, '', 200);
     }
 
     public function getAllServices(Request $request){

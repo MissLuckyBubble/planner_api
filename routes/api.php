@@ -98,7 +98,7 @@ Route::group(['middleware' => ['auth:sanctum']], function (){
     Route::post('/business/services/create', [Controllers\ServiceController::class, 'createService']);
     Route::patch('/business/services/edit/{service}', [Controllers\ServiceController::class, 'editService']);
     Route::patch('/business/services/move/{service}', [Controllers\ServiceController::class, 'moveServiceToNewCategory']);
-    Route::delete('/business/services/delete/{service}', [Controllers\ServiceController::class, 'deleteService']);
+    Route::patch('/business/services/disable/{service}', [Controllers\ServiceController::class, 'disableService']);
     Route::get('/getAllServices', [App\Http\Controllers\ServiceController::class, 'getAllServices']);
     //Group Appointment
     Route::post('/business/group_appointment/create', [Controllers\AppointmentController::class, 'createGroupAppointment']);

@@ -13,7 +13,8 @@ class Service extends Model
         'price',
         'duration',
         'service_category_id',
-        'business_id'
+        'business_id',
+        'disabled'
     ];
 
     public function service_category():BelongsTo
