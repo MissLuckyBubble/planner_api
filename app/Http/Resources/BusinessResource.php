@@ -39,7 +39,7 @@ class BusinessResource extends JsonResource
                     'title' => $serviceCategory->title,
                     'services' => array_merge(
                         $serviceCategory->services->where('disabled',false)->toArray(),
-                        $serviceCategory->group_appointments->where('date', '>', now())->toArray())
+                        $serviceCategory->group_appointments->where('date', '>', now())->where('status','Запазен')->toArray())
                 ];
             }),
             'comments' => $this->ratings

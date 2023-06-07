@@ -27,9 +27,9 @@ class AddressController extends Controller
             'latitude' => $request->latitude,
             'longitude' => $request->longitude
         ]);
-        return $this->success([
+        return $this->success(
             new BusinessResource(Auth::user()->business)
-        ]);
+        );
     }
     public  function getAddress(){
         return AddressResource::collection(

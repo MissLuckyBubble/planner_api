@@ -106,6 +106,7 @@ Route::group(['middleware' => ['auth:sanctum']], function (){
     Route::patch('/business/group_appointment/remove_clients/{groupAppointment}', [Controllers\AppointmentController::class, 'removeClientsFromGroupAppointment']);
     Route::patch('/customer/group_appointment/signup/{groupAppointment}', [Controllers\CustomerController::class, 'clientSignUpForGroupAppointment']);
     Route::patch('/customer/group_appointment/cancel/{groupAppointment}', [Controllers\CustomerController::class, 'customerCancelGroupAppointment']);
+    Route::patch('/business/group_appointment/cancel/{groupAppointment}', [Controllers\AppointmentController::class, 'cancelGroupAppointment']);
 
     //Business Appointment
     Route::post('/business/appointments/create/', [Controllers\AppointmentController::class, 'createAppointment']);

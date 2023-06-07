@@ -11,11 +11,11 @@ class GroupAppointmentHasCustomers extends Model{
         'customer_id',
     ];
 
-    public function customer():BelongsTo
+    public function customer()
     {
         return $this->belongsTo(Customer::class);
     }
-    public function group_appointment():BelongsTo
+    public function group_appointment()
     {
         return $this->belongsTo(Customer::class);
     }

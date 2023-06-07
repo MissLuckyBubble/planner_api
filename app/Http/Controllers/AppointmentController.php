@@ -12,6 +12,7 @@ use App\Mail\CancelAppointmentMail;
 use App\Models\Appointment;
 use App\Models\AppointmentNoCustomer;
 use App\Models\CustomDayOff;
+use App\Models\Customer;
 use App\Models\GroupAppointment;
 use App\Models\Service;
 use App\Models\ServiceCategory;
@@ -68,7 +69,7 @@ class AppointmentController extends Controller
             ->where('date', $requestedDate)
             ->first();
 
-        if(Auth::user()->role_id == 1) {
+        if (Auth::user()->role_id == 1) {
             if (!$businessWorkday || $customDayOff) {
                 return $this->error('', 'Бизнесът не работи на този ден.', 400);
             }
@@ -101,8 +102,7 @@ class AppointmentController extends Controller
 
         if ($overlappingAppointments->count() > 0 ||
             $overlappingAppointmentsNoCustomer->count() > 0 ||
-            $overlappingGroupAppointments->count() > 0)
-        {
+            $overlappingGroupAppointments->count() > 0) {
             return $this->error('', 'Бизнесът е зает за този период.', 400);
         }
 
@@ -131,8 +131,7 @@ class AppointmentController extends Controller
             $totalDuration += $service->duration;
         }
 
-        if($this->checkBusinessAvailability($business->id, $request->date, $request->start_time, $totalDuration))
-        {
+        if ($this->checkBusinessAvailability($business->id, $request->date, $request->start_time, $totalDuration)) {
             return $this->checkBusinessAvailability($business->id, $request->date, $request->start_time, $totalDuration);
         }
 
@@ -177,8 +176,8 @@ class AppointmentController extends Controller
         $request->validated($request->all());
         $user = Auth::user();
 
-        if($user->role_id != 2){
-            return $this->error('','Грешка. Трябва да сте бизнес за да направите тази заявка.', 403);
+        if ($user->role_id != 2) {
+            return $this->error('', 'Грешка. Трябва да сте бизнес за да направите тази заявка.', 403);
         }
 
         $appointment_query = Appointment::where('business_id', $user->business->id);
@@ -236,38 +235,43 @@ class AppointmentController extends Controller
         return $this->success($all, 'Success', 200);
     }
 
-    public function deleteAppointmentNoCustomer(AppointmentNoCustomer $appointment){
+    public function deleteAppointmentNoCustomer(AppointmentNoCustomer $appointment)
+    {
         if (!$appointment->id) {
             return $this->error('Invalid appointment.', '', 400);
         }
         return $this->BusinessisNotAuthorized($appointment) ? $this->BusinessisNotAuthorized($appointment) : $appointment->delete();
     }
 
-    public function cancelAppointment(Appointment $appointment){
-        if($this->BusinessisNotAuthorized($appointment)){
+    public function cancelAppointment(Appointment $appointment)
+    {
+        if ($this->BusinessisNotAuthorized($appointment)) {
             return $this->BusinessisNotAuthorized($appointment);
-        }else if($appointment->status != 'Запазен'){
-            return $this->error('', 'Час със Статус: "'. $appointment->status .'" не може да бъде променян', 400);
+        } else if ($appointment->status != 'Запазен') {
+            return $this->error('', 'Час със Статус: "' . $appointment->status . '" не може да бъде променян', 400);
         }
         $appointment->update([
             'status' => 'Отказан от Фирмата'
         ]);
 
         \Mail::to($appointment->customer->user->email)->send(
-            new CancelAppointmentMail($appointment->customer,$appointment->business,$appointment));
+            new CancelAppointmentMail($appointment->customer, $appointment->business, $appointment));
 
         return new AppointmentResource($appointment);
     }
-    private  function BusinessisNotAuthorized($appointment){
-        if(Auth::user()->business->id !== $appointment->business->id){
+
+    private function BusinessisNotAuthorized($appointment)
+    {
+        if (Auth::user()->business->id !== $appointment->business->id) {
             return $this->error('', 'You are not authorized to make this request', 403);
         }
     }
 
-    public function editAppointmentNoCustomer(AppointmentNoCustomer $appointment, AppointmentNoCustomerRequest $request){
+    public function editAppointmentNoCustomer(AppointmentNoCustomer $appointment, AppointmentNoCustomerRequest $request)
+    {
         $request->validated($request->all());
 
-        if($this->BusinessisNotAuthorized($appointment)){
+        if ($this->BusinessisNotAuthorized($appointment)) {
             return $this->BusinessisNotAuthorized($appointment);
         }
 
@@ -290,8 +294,7 @@ class AppointmentController extends Controller
             $totalDuration += $service->duration;
         }
 
-        if($this->checkBusinessAvailability($business->id, $request->date, $request->start_time, $totalDuration))
-        {
+        if ($this->checkBusinessAvailability($business->id, $request->date, $request->start_time, $totalDuration)) {
             return $this->checkBusinessAvailability($business->id, $request->date, $request->start_time, $totalDuration);
         }
 
@@ -336,14 +339,13 @@ class AppointmentController extends Controller
         $business = Auth::user()->business;
         $request->validated($request->all());
 
-        if($this->checkBusinessAvailability($business->id, $request->date, $request->start_time, $request->duration))
-        {
+        if ($this->checkBusinessAvailability($business->id, $request->date, $request->start_time, $request->duration)) {
             return $this->checkBusinessAvailability($business->id, $request->date, $request->start_time, $request->duration);
         }
 
         $appointment = GroupAppointment::create([
             'title' => $request->title,
-            'business_id' =>$business->id,
+            'business_id' => $business->id,
             'description' => $request->description,
             'date' => $request->date,
             'start_time' => $request->start_time,
@@ -360,38 +362,43 @@ class AppointmentController extends Controller
         ]);
     }
 
-    public function addClientsToGroupAppointment(GroupAppointment $groupAppointment, Request $request){
+    public function addClientsToGroupAppointment(GroupAppointment $groupAppointment, Request $request)
+    {
         if (Auth::user()->role_id != 2) {
             return $this->error('', 'Грешка. Не може да създавате групова среща, ако не сте бизнес.', 400);
         }
         $request->validate([
-            'count' =>['required', 'integer'],
+            'count' => ['required', 'integer'],
         ]);
-        if($groupAppointment->count_ppl + $request->count > $groupAppointment->max_capacity)
-        {
-            return $this->error('','Надвишавате избрания максимален капацитет.',422);
+        if ($groupAppointment->count_ppl + $request->count > $groupAppointment->max_capacity) {
+            return $this->error('', 'Надвишавате избрания максимален капацитет.', 422);
         }
         $groupAppointment->update(
             ['count_ppl' => $groupAppointment->count_ppl + $request->count]
         );
         return $this->success($groupAppointment);
     }
-    public function removeClientsFromGroupAppointment(GroupAppointment $groupAppointment, $request){
+
+    public function removeClientsFromGroupAppointment(GroupAppointment $groupAppointment, Request $request)
+    {
         if (Auth::user()->role_id != 2) {
             return $this->error('', 'Грешка. Не може да създавате групова среща, ако не сте бизнес.', 400);
         }
         $request->validate([
-            'count' =>['required', 'integer|min:0'],
+            'count' => ['required', 'integer'],
         ]);
-        if($groupAppointment->count_ppl - $request->count < $groupAppointment->group_appointment_has_customers->count())
-        {
-            return $this->error('','Можете да премахвате само бройка която сте добавили ръчно.',422);
+        if ($request->count <= 0) {
+            return $this->error('', 'Невалиден брой.', 422);
+        }
+        if ($groupAppointment->count_ppl - $request->count < $groupAppointment->group_appointment_has_customers->count()) {
+            return $this->error('', 'Можете да премахвате само бройка която сте добавили ръчно.', 422);
         }
         $groupAppointment->update(
             ['count_ppl' => $groupAppointment->count_ppl - $request->count]
         );
         return $this->success($groupAppointment);
     }
+
     public function editGroupService(StoreServiceRequest $request, GroupAppointment $service)
     {
         $serviceCategory = ServiceCategory::findOrFail($service->service_category_id);
@@ -444,12 +451,26 @@ class AppointmentController extends Controller
         ]);
     }
 
-    public function deleteGroupService(GroupAppointment $service)
+    public function cancelGroupAppointment(GroupAppointment $groupAppointment)
     {
-        $serviceCategory = ServiceCategory::findOrFail($service->service_category_id);
-        if ($this->isNotAuthorized($serviceCategory))
-            return $this->isNotAuthorized($serviceCategory);
-        else return $service->delete();
+
+        if ($this->BusinessisNotAuthorized($groupAppointment)) {
+            return $this->BusinessisNotAuthorized($groupAppointment);
+        } else if ($groupAppointment->status != 'Запазен') {
+            return $this->error('', 'Час със Статус: "' . $groupAppointment->status . '" не може да бъде променян', 400);
+        }
+        $groupAppointment->update([
+            'status' => 'Отказан от Фирмата'
+        ]);
+
+        foreach ($groupAppointment->group_appointment_has_customers as $has_customer) {
+            $customer = Customer::where('id', $has_customer->customer_id)->first();
+            if ($customer) {
+                \Mail::to($customer->user->email)->send(
+                    new CancelAppointmentMail($customer, $groupAppointment->business, $groupAppointment));
+            }
+        }
+        return new AppointmentResource($groupAppointment);
     }
 
 }

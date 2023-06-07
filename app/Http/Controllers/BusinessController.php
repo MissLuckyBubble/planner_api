@@ -133,14 +133,14 @@ class BusinessController extends Controller
             return $this->error('An error occurred', 500);
         }
 
-        return $this->success([
+        return $this->success(
             BusinessResource::collection($businesses)
-        ]);
+        );
     }
     public function getBusiness(Business $business){
-        return $this->success([
+        return $this->success(
             new BusinessResource($business)
-        ]);
+        );
     }
 
 
